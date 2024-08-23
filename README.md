@@ -4,7 +4,7 @@
 * ========================================================================
 * MySQL
 * Freeradius3
-* Coova-Chilli
+* Coova-Chilli (For Loginpage)
 * php minimum version 7
 * php-mod-mysqli, php-mod-pdo-mysql, php-mod-curl, php-mod-gd,
 * ========================================================================
