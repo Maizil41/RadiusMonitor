@@ -15,7 +15,7 @@
 * Add & Remove Users
 * Add & Remove Batch
 * Disconnect Users
-* Testing Users using Radclient
+* Testing Users using Radtest
 * Income Calculation
 * Database Restore & Backup
 * QRCode Tickets suport
