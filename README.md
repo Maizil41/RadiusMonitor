@@ -1,6 +1,20 @@
 * **PACKAGES NEEDED**
-========================================================================
+
+* MySQL
 * Freeradius3
 * Coova-Chilli
-* MySQL
-* php-mod-mysqli, php-mod-pdo-mysql, php-mod-curl
+* php minimum version 7
+* php-mod-mysqli, php-mod-pdo-mysql, php-mod-curl, php-mod-gd, 
+
+
+* **FEATURES**
+
+* Add & Remove Plans
+* Add & Remove Bandwidth
+* Add & Remove Users
+* Add & Remove Batch
+* Disconnect Users
+* Testing Users using Radclient
+* Income Calculation
+* Database Restore & Backup
+* QRCode Tickets suport
