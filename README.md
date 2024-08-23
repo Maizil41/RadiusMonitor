@@ -21,5 +21,5 @@
 * QRCode Tickets suport
 * ========================================================================
 
-![Screenshot]([https://github.com/username/repo-name/blob/main/images/logo.png](https://github.com/Maizil41/RadiusMonitor/blob/main/Capture1.PNG))
+![Screenshot](https://github.com/Maizil41/RadiusMonitor/blob/main/Capture1.PNG)
 
