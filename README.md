@@ -1,15 +1,13 @@
 * **PACKAGES NEEDED**
-
+* ========================================================================
 * MySQL
 * Freeradius3
 * Coova-Chilli
 * php minimum version 7
 * php-mod-mysqli, php-mod-pdo-mysql, php-mod-curl, php-mod-gd,
-* 
 * ========================================================================
-* 
 * **FEATURES**
-
+* ========================================================================
 * Add & Remove Plans
 * Add & Remove Bandwidth
 * Add & Remove Users
@@ -19,3 +17,4 @@
 * Income Calculation
 * Database Restore & Backup
 * QRCode Tickets suport
+* ========================================================================
