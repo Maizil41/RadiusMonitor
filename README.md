@@ -10,15 +10,16 @@
 * ========================================================================
 * **FEATURES**
 * ========================================================================
-* Add & Remove Plans
+* Add, Edit & Remove Plans
 * Add & Remove Bandwidth
 * Add & Remove Users
 * Add & Remove Batch
+* Mac Binding Support
 * Disconnect Users
 * Testing Users using Radtest
 * Income Calculation
 * Database Restore & Backup
-* QRCode Tickets suport
+* QRCode Tickets support
 * ========================================================================
 
 ![Screenshot1](https://github.com/Maizil41/RadiusMonitor/blob/main/Capture1.PNG)
