@@ -94,6 +94,14 @@ $log = array_reverse($log);
 
 $logString = '';
 foreach ($log as $line) {
+    // Cek apakah baris log mengandung 'Login incorrect'
+    if (strpos($line, 'Login incorrect') !== false) {
+        // Cek apakah terdapat MAC address dalam baris log
+        if (preg_match('/\[([A-Fa-f0-9]{2}[:-]){5}[A-Fa-f0-9]{2}\//', $line)) {
+            continue; // Lewati baris log ini jika mengandung 'Login incorrect' dan MAC address
+        }
+    }
+
     $encodedLine = htmlspecialchars($line);
     $encodedLine = str_replace(
         ['Login OK', 'LogOut OK', 'Login incorrect'],
@@ -150,6 +158,9 @@ foreach ($log as $line) {
                                 <li class="nav-item"> <a href="./list_user.php" class="nav-link"> <i class="nav-icon bi mdi--user-group"></i>
                                         <p>All User</p>
                                     </a> </li>
+                                <li class="nav-item"> <a href="./mac_binding.php" class="nav-link"> <i class="nav-icon bi eos-icons--role-binding-outlined"></i>
+                                        <p>Mac Binding</p>
+                                    </a> </li>
                                 <li class="nav-item"> <a href="./online_user.php" class="nav-link"> <i class="nav-icon bi gis--globe-user"></i>
                                         <p>Online User</p>
                                     </a> </li>
@@ -200,6 +211,9 @@ foreach ($log as $line) {
                                     </a> </li>
                                 <li class="nav-item"> <a href="./client_tester.php" class="nav-link"> <i class="nav-icon bi ep--connection"></i>
                                         <p>Client Tester</p>
+                                    </a> </li>
+                                <li class="nav-item"> <a href="./php_admin.php" class="nav-link"> <i class="nav-icon bi phpmyadmin"></i>
+                                        <p>Php Admin</p>
                                     </a> </li>
                                 </ul>
                             </li>

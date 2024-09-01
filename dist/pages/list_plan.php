@@ -59,6 +59,9 @@ require './auth.php';
                                 <li class="nav-item"> <a href="./list_user.php" class="nav-link"> <i class="nav-icon bi mdi--user-group"></i>
                                         <p>All User</p>
                                     </a> </li>
+                                <li class="nav-item"> <a href="./mac_binding.php" class="nav-link"> <i class="nav-icon bi eos-icons--role-binding-outlined"></i>
+                                        <p>Mac Binding</p>
+                                    </a> </li>
                                 <li class="nav-item"> <a href="./online_user.php" class="nav-link"> <i class="nav-icon bi gis--globe-user"></i>
                                         <p>Online User</p>
                                     </a> </li>
@@ -100,7 +103,7 @@ require './auth.php';
                                     <i class="nav-arrow bi iconoir--nav-arrow-right"></i>
                                 </p>
                             </a>
-                             <ul class="nav nav-treeview">
+                            <ul class="nav nav-treeview">
                                 <li class="nav-item"> <a href="./sys_info.php" class="nav-link"> <i class="nav-icon bi mdi--server-outline"></i>
                                         <p>Information</p>
                                     </a> </li>
@@ -109,6 +112,9 @@ require './auth.php';
                                     </a> </li>
                                 <li class="nav-item"> <a href="./client_tester.php" class="nav-link"> <i class="nav-icon bi ep--connection"></i>
                                         <p>Client Tester</p>
+                                    </a> </li>
+                                <li class="nav-item"> <a href="./php_admin.php" class="nav-link"> <i class="nav-icon bi phpmyadmin"></i>
+                                        <p>Php Admin</p>
                                     </a> </li>
                                 </ul>
                             </li>
@@ -143,7 +149,8 @@ $sql = "SELECT
     bp.planTimeBank, 
     bp.planCost,
     rgc_simultaneous.value AS Simultaneous_Use,
-    rgc_max.value AS Max_All_Session
+    rgc_max.value AS Max_All_Session,
+    rgr_octets.value AS Max_Total_Octets
 FROM 
     billing_plans bp
 LEFT JOIN 
@@ -156,7 +163,13 @@ LEFT JOIN
 ON 
     bp.planName = rgc_max.groupname 
     AND rgc_max.attribute = 'Max-All-Session'
-ORDER BY bp.id DESC
+LEFT JOIN 
+    radgroupreply rgr_octets 
+ON 
+    bp.planName = rgr_octets.groupname 
+    AND rgr_octets.attribute = 'ChilliSpot-Max-Total-Octets'
+ORDER BY 
+    bp.id DESC
 LIMIT $limit OFFSET $offset";
 
 $result = $conn->query($sql);
@@ -180,6 +193,7 @@ $result = $conn->query($sql);
     <th><center>Type</th>
     <th><center>Duration</th>
     <th><center>Validity</th>
+    <th><center>Kuota</th>
     <th><center>Shared</th>
     <th><center>Actions</th>
 </tr>
@@ -195,6 +209,7 @@ if ($result->num_rows > 0) {
         $shared = htmlspecialchars($row['Simultaneous_Use']);
         $duration = (int)$row['Max_All_Session'];
         $validity = (int)$row['planTimeBank'];
+        $kuota = toxbyte($row['Max_Total_Octets']);
         $plan_validity = formatTime($validity);
         $plan_duration = formatTime($duration);
 
@@ -203,6 +218,7 @@ if ($result->num_rows > 0) {
         <td><center>$plan_type</td>
         <td><center>$plan_duration</td>
         <td><center>$plan_validity</td>
+        <td><center>$kuota</td>
         <td><center>$shared</td>";
 
         echo "<td><center>
@@ -210,6 +226,7 @@ if ($result->num_rows > 0) {
                     <input type='hidden' name='id' value='$plan_id'>
                     <input type='hidden' name='plan_name' value='$plan_names'>
                     <input type='hidden' name='action' value='delete'>
+                    <a href='edit_plan.php?id=$plan_id' class='btn btn-warning btn-sm'><i class='tabler--edit'></i></a>
                     <button type='submit' class='btn btn-danger btn-sm'><i class='fa6-solid--trash-can'></i></button>
                 </form>
             </td>
@@ -255,6 +272,22 @@ Radius Monitor by
 </div> <!--end::App Wrapper--> <!--begin::Script--> <!--begin::Third Party Plugin(OverlayScrollbars)-->
 <script src="../../dist/js/adminlte.js"></script> <!--end::Required Plugin(AdminLTE)--><!--begin::OverlayScrollbars Configure-->
 <?php
+function toxbyte($size) {
+    if (empty($size)) {
+        return "Unlimited";
+    }
+    
+    if ($size >= 1073741824) {
+        return round($size / 1073741824, 2) . " GB";
+    } elseif ($size >= 1048576) {
+        return round($size / 1048576, 2) . " MB";
+    } elseif ($size >= 1024) {
+        return round($size / 1024, 2) . " KB";
+    } else {
+        return $size . " B";
+    }
+}
+
 function formatTime($time) {
     // Waktu dalam detik
     if ($time < 60) {

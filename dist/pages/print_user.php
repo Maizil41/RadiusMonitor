@@ -59,6 +59,9 @@ require './auth.php';
                                 <li class="nav-item"> <a href="./list_user.php" class="nav-link"> <i class="nav-icon bi mdi--user-group"></i>
                                         <p>All User</p>
                                     </a> </li>
+                                <li class="nav-item"> <a href="./mac_binding.php" class="nav-link"> <i class="nav-icon bi eos-icons--role-binding-outlined"></i>
+                                        <p>Mac Binding</p>
+                                    </a> </li>
                                 <li class="nav-item"> <a href="./online_user.php" class="nav-link"> <i class="nav-icon bi gis--globe-user"></i>
                                         <p>Online User</p>
                                     </a> </li>
@@ -100,7 +103,7 @@ require './auth.php';
                                     <i class="nav-arrow bi iconoir--nav-arrow-right"></i>
                                 </p>
                             </a>
-                             <ul class="nav nav-treeview">
+                            <ul class="nav nav-treeview">
                                 <li class="nav-item"> <a href="./sys_info.php" class="nav-link"> <i class="nav-icon bi mdi--server-outline"></i>
                                         <p>Information</p>
                                     </a> </li>
@@ -109,6 +112,9 @@ require './auth.php';
                                     </a> </li>
                                 <li class="nav-item"> <a href="./client_tester.php" class="nav-link"> <i class="nav-icon bi ep--connection"></i>
                                         <p>Client Tester</p>
+                                    </a> </li>
+                                <li class="nav-item"> <a href="./php_admin.php" class="nav-link"> <i class="nav-icon bi phpmyadmin"></i>
+                                        <p>Php Admin</p>
                                     </a> </li>
                                 </ul>
                             </li>
@@ -176,8 +182,17 @@ echo '<div class="table-responsive">
             </thead>
         <tbody>';
 
+function isMacAddress($username) {
+    // Regex untuk memeriksa apakah username berbentuk MAC address
+    return preg_match('/^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$/', $username);
+}
+
 if ($result->num_rows > 0) {
     while ($row = $result->fetch_assoc()) {
+        if (isMacAddress($row["username"])) {
+            continue; // Lewati iterasi ini jika username adalah MAC address
+        }
+
         $url = "../pages/data/printTickets.php?type=batch&plan=" . urlencode($row["planName"]) . "&accounts=Username,Password||" . urlencode($row["username"]) . ",Accept";
         echo "<tr>";
         echo "<td><center>" . htmlspecialchars($row["username"]) . "</td>";
