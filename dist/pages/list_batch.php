@@ -143,7 +143,6 @@ require './auth.php';
 <?php
 include ("data/db.php");
 
-$sql = "SELECT *FROM batch_history";
 // Jumlah batch yang ditampilkan per halaman
 $limit = 7;
 $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
@@ -186,13 +185,16 @@ LEFT JOIN
 LEFT JOIN 
     radusergroup rug ON ui.username = rug.username
 GROUP BY
-    bh.id, bh.batch_name, uc.total_user, ui.planName, rug.groupname
+    bh.id, bh.batch_name, bh.batch_description, bh.creationdate, bh.batch_status, bh.creationby, uc.total_user, ui.planName, rug.groupname
 ORDER BY 
     bh.id DESC
-LIMIT $limit OFFSET $offset;
+LIMIT ? OFFSET ?;
 ";
 
-$result = $conn->query($sql);
+$stmt = $conn->prepare($sql);
+$stmt->bind_param("ii", $limit, $offset);
+$stmt->execute();
+$result = $stmt->get_result();
 
 echo '<div class="table-responsive">
         <table id="datatable" class="table table-bordered table-striped table-condensed">
@@ -208,7 +210,7 @@ echo '<div class="table-responsive">
                     <th><center>Action</center></th>
                 </tr>
             </thead>
-            <tbody>';
+        <tbody>';
 
 if ($result->num_rows > 0) {
     while ($row = $result->fetch_assoc()) {
@@ -218,38 +220,32 @@ if ($result->num_rows > 0) {
         $creationdate = htmlspecialchars($row['creationdate']);
         $user_count = htmlspecialchars($row['total_user']);
         $plan_name = htmlspecialchars($row['planName']);
+        $batch_status = htmlspecialchars($row['batch_status']);
+        $creationby = htmlspecialchars($row['creationby']);
         
-        $sql_accounts = "SELECT username, planName FROM userbillinfo WHERE batch_id = ?";
-        $stmt = $conn->prepare($sql_accounts);
-        $stmt->bind_param("i", $batch_id);
-        $stmt->execute();
-        $result_accounts = $stmt->get_result();
+        $sql_accounts = "SELECT username FROM userbillinfo WHERE batch_id = ?";
+        $stmt_accounts = $conn->prepare($sql_accounts);
+        $stmt_accounts->bind_param("i", $batch_id);
+        $stmt_accounts->execute();
+        $result_accounts = $stmt_accounts->get_result();
         
         $all_numbers = [];
         while ($row_accounts = $result_accounts->fetch_assoc()) {
-            $all_numbers[] = $row_accounts['username'];
-            $plan_name = $row_accounts['planName'];  // Asumsikan semua username memiliki planName yang sama
+            $all_numbers[] = htmlspecialchars($row_accounts['username']);
         }
         
-        $accounts_str = '||' . implode('||', array_map(function($num) {
+        $accounts_str = implode('||', array_map(function($num) {
             return "$num,Accept";
         }, $all_numbers));
         
-        $urls = [
-            'printTickets1.php' => "data/printTickets1.php?type=batch&plan=$plan_name&accounts=Username,Password$accounts_str",
-            'printTickets2.php' => "data/printTickets2.php?type=batch&plan=$plan_name&accounts=Username,Password$accounts_str",
-            'printTickets3.php' => "data/printTickets3.php?type=batch&plan=$plan_name&accounts=Username,Password$accounts_str",
-            'printTickets4.php' => "data/printTickets4.php?type=batch&plan=$plan_name&accounts=Username,Password$accounts_str"
-        ];
-
         echo "<tr>";
         echo "<td><center>$batch_name</center></td>";
         echo "<td><center>$batch_description</center></td>";
         echo "<td><center>$plan_name</center></td>";
-        echo "<td><center>" . htmlspecialchars($row["batch_status"]) . "</center></td>";
+        echo "<td><center>$batch_status</center></td>";
         echo "<td><center>$user_count</center></td>";
         echo "<td><center>$creationdate</center></td>";
-        echo "<td><center>" . htmlspecialchars($row["creationby"]) . "</center></td>";
+        echo "<td><center>$creationby</center></td>";
         echo "<td><center>
                 <form action='list_batch.php' method='post' onsubmit='return confirm(\"Apakah Anda yakin ingin menghapus batch $batch_name ?\");'>
                     <input type='hidden' name='id' value='$batch_id'>
@@ -261,7 +257,7 @@ if ($result->num_rows > 0) {
                     <option value='printTickets3.php'>3</option>
                     <option value='printTickets4.php'>4</option>
                 </select>
-                <button type='button' class='btn btn-success btn-sm' onclick=\"printTicket('$batch_id', '$plan_name')\"><i class='ion-android-print'></i></button>
+                <button type='button' class='btn btn-success btn-sm' onclick=\"printTicket('$batch_id', '$plan_name', '$accounts_str')\"><i class='ion-android-print'></i></button>
                 </form>
             </center></td>";
         echo "</tr>";
@@ -269,7 +265,7 @@ if ($result->num_rows > 0) {
 } else {
     echo "<tr><td colspan='8'><center>Tidak ada data</center></td></tr>";
 }
-echo"
+echo "
     </tbody>
        </table>
          </div>
@@ -296,19 +292,8 @@ echo"
 </main>
 ";
 
-?>
-
-<footer class="app-footer"> <!--begin::To the end-->
-            <div class="float-end d-none d-sm-inline">Themes by <a href="https://adminlte.io" target="_blank" class="text-decoration-none">AdminLTE.io</a></div>
-                Radius Monitor by 
-                <a href="https://github.com/Maizil41" target="_blank" class="text-decoration-none">Maizil41</a>
-            </strong>
-            <!--end::Copyright-->
-        </footer> <!--end::Footer-->
-    </div> <!--end::App Wrapper--> <!--begin::Script--> <!--begin::Third Party Plugin(OverlayScrollbars)-->
-<script src="../../dist/js/adminlte.js"></script> <!--end::Required Plugin(AdminLTE)--><!--begin::OverlayScrollbars Configure-->
-<script>
-function printTicket(batchId, planName) {
+echo "<script>
+function printTicket(batchId, planName, accountsStr) {
     var printerSelect = document.getElementById('selectPrinter' + batchId);
     var selectedPrinter = printerSelect.value;
     
@@ -320,13 +305,22 @@ function printTicket(batchId, planName) {
     };
     
     var baseUrl = urls[selectedPrinter];
-    var accountsStr = '||' + <?php echo json_encode(implode('||', array_map(function($num) {
-        return "$num,Accept";
-    }, $all_numbers))); ?>;
-    var url = baseUrl + "?type=batch&plan=" + encodeURIComponent(planName) + "&accounts=Username,Password" + accountsStr;
+    var url = baseUrl + '?type=batch&plan=' + encodeURIComponent(planName) + '&accounts=Username,Password||' + accountsStr;
     window.open(url, '_blank');
 }
-</script>
+</script>";
+?>
+
+<footer class="app-footer"> <!--begin::To the end-->
+            <div class="float-end d-none d-sm-inline">Themes by <a href="https://adminlte.io" target="_blank" class="text-decoration-none">AdminLTE.io</a></div>
+                Radius Monitor by 
+                <a href="https://github.com/Maizil41" target="_blank" class="text-decoration-none">Maizil41</a>
+            </strong>
+            <!--end::Copyright-->
+        </footer> <!--end::Footer-->
+    </div> <!--end::App Wrapper--> <!--begin::Script--> <!--begin::Third Party Plugin(OverlayScrollbars)-->
+<script src="../../dist/js/adminlte.js"></script> <!--end::Required Plugin(AdminLTE)--><!--begin::OverlayScrollbars Configure-->
+
 <?php
 try {
     $dsn = 'mysql:host=127.0.0.1;dbname=radius';
