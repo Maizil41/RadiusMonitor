@@ -415,7 +415,6 @@
     box-sizing: border-box;
 }
 
-/* Untuk memastikan tombol submit juga kecil */
 input[type="submit"].kecil {
     background-color: #007bff;
     color: #fff;
@@ -424,15 +423,10 @@ input[type="submit"].kecil {
     transition: background-color 0.3s ease;
 }
 
-/* Gaya hover untuk tombol submit kecil */
 input[type="submit"].kecil:hover {
     background-color: #0056b3;
 }
 .status-running {
     color: green;
-    font-weight: bold;
-}
-.status-not-running {
-    color: red;
     font-weight: bold;
 }
