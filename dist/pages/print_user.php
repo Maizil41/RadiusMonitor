@@ -183,23 +183,29 @@ echo '<div class="table-responsive">
         <tbody>';
 
 function isMacAddress($username) {
-    // Regex untuk memeriksa apakah username berbentuk MAC address
     return preg_match('/^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$/', $username);
 }
 
 if ($result->num_rows > 0) {
     while ($row = $result->fetch_assoc()) {
         if (isMacAddress($row["username"])) {
-            continue; // Lewati iterasi ini jika username adalah MAC address
+            continue;
         }
 
-        $url = "../pages/data/printTickets.php?type=batch&plan=" . urlencode($row["planName"]) . "&accounts=Username,Password||" . urlencode($row["username"]) . ",Accept";
         echo "<tr>";
         echo "<td><center>" . htmlspecialchars($row["username"]) . "</td>";
         echo "<td><center>" . htmlspecialchars($row["planName"]) . "</td>";
         echo "<td><center>Rp " . htmlspecialchars($row["planCost"]) . "</td>";
         echo "<td><center>" . htmlspecialchars($row["creationdate"]) . "</td>";
-        echo "<td><center><span class='btn btn-success btn-sm' style='cursor:pointer'; onclick=\"window.open('$url', '_blank')\"><i class='ion-android-print'></i></span></td>";
+        echo "<td><center>
+                <select class='btn btn-warning' id='selectPrinter" . $row['username'] . "'>
+                    <option value='printTickets1.php'>1</option>
+                    <option value='printTickets2.php'>2</option>
+                    <option value='printTickets3.php'>3</option>
+                    <option value='printTickets4.php'>4</option>
+                </select>
+                <span class='btn btn-success btn-sm' style='cursor:pointer;' onclick=\"printTicket('" . $row['username'] . "', '" . $row['planName'] . "')\"><i class='ion-android-print'></i></span>
+              </center></td>";
         echo "</tr>";
     }
 } else {
@@ -230,7 +236,17 @@ echo"
         <div></div>
     </section>
 </main>
-"; ?>
+";
+
+echo "<script>
+function printTicket(username, planName) {
+    var selectElement = document.getElementById('selectPrinter' + username);
+    var selectedPrinter = selectElement.value;
+    var url = '../pages/data/' + selectedPrinter + '?type=batch&plan=' + encodeURIComponent(planName) + '&accounts=Username,Password||' + encodeURIComponent(username) + ',Accept';
+    window.open(url, '_blank');
+}
+</script>";
+?>
 <footer class="app-footer"> <!--begin::To the end-->
             <div class="float-end d-none d-sm-inline">Themes by <a href="https://adminlte.io" target="_blank" class="text-decoration-none">AdminLTE.io</a></div>
                 Radius Monitor by 

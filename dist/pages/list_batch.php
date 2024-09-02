@@ -140,59 +140,59 @@ require './auth.php';
                     <i class="ion ion--add"></i> New Batch </a>
                 </div>&nbsp;
             <div class="table-responsive">
-        <?php
-        include ("data/db.php");
-        
-        $sql = "SELECT *FROM batch_history";
-        // Jumlah batch yang ditampilkan per halaman
-        $limit = 7;
-        $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
-        $offset = ($page - 1) * $limit;
+<?php
+include ("data/db.php");
 
-        // Query untuk menghitung jumlah total batch
-        $sql_total = "SELECT COUNT(*) as total FROM batch_history";
-        $result_total = $conn->query($sql_total);
-        $row_total = $result_total->fetch_assoc();
-        $total_batches = $row_total['total'];
-        $total_pages = ceil($total_batches / $limit);
+$sql = "SELECT *FROM batch_history";
+// Jumlah batch yang ditampilkan per halaman
+$limit = 7;
+$page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
+$offset = ($page - 1) * $limit;
 
-        // Query untuk menampilkan batch history terbaru dengan batasan offset dan limit
-        $sql = "
-        WITH UserCounts AS (
-            SELECT 
-                batch_id,
-                COUNT(username) AS total_user
-            FROM 
-                userbillinfo
-            GROUP BY 
-                batch_id
-        )
-        SELECT 
-            bh.id AS batch_id,
-            bh.batch_name,
-            bh.batch_description,
-            bh.creationdate,
-            bh.batch_status,
-            bh.creationby,
-            COALESCE(uc.total_user, 0) AS total_user,
-            ui.planName,
-            rug.groupname
-        FROM 
-            batch_history bh
-        LEFT JOIN 
-            UserCounts uc ON bh.id = uc.batch_id
-        LEFT JOIN 
-            userbillinfo ui ON bh.id = ui.batch_id
-        LEFT JOIN 
-            radusergroup rug ON ui.username = rug.username
-        GROUP BY
-            bh.id, bh.batch_name, uc.total_user, ui.planName, rug.groupname
-        ORDER BY 
-            bh.id DESC
-        LIMIT $limit OFFSET $offset;
+// Query untuk menghitung jumlah total batch
+$sql_total = "SELECT COUNT(*) as total FROM batch_history";
+$result_total = $conn->query($sql_total);
+$row_total = $result_total->fetch_assoc();
+$total_batches = $row_total['total'];
+$total_pages = ceil($total_batches / $limit);
+
+// Query untuk menampilkan batch history terbaru dengan batasan offset dan limit
+$sql = "
+WITH UserCounts AS (
+    SELECT 
+        batch_id,
+        COUNT(username) AS total_user
+    FROM 
+        userbillinfo
+    GROUP BY 
+        batch_id
+)
+SELECT 
+    bh.id AS batch_id,
+    bh.batch_name,
+    bh.batch_description,
+    bh.creationdate,
+    bh.batch_status,
+    bh.creationby,
+    COALESCE(uc.total_user, 0) AS total_user,
+    ui.planName,
+    rug.groupname
+FROM 
+    batch_history bh
+LEFT JOIN 
+    UserCounts uc ON bh.id = uc.batch_id
+LEFT JOIN 
+    userbillinfo ui ON bh.id = ui.batch_id
+LEFT JOIN 
+    radusergroup rug ON ui.username = rug.username
+GROUP BY
+    bh.id, bh.batch_name, uc.total_user, ui.planName, rug.groupname
+ORDER BY 
+    bh.id DESC
+LIMIT $limit OFFSET $offset;
 ";
 
-        $result = $conn->query($sql);
+$result = $conn->query($sql);
 
 echo '<div class="table-responsive">
         <table id="datatable" class="table table-bordered table-striped table-condensed">
@@ -235,7 +235,12 @@ if ($result->num_rows > 0) {
             return "$num,Accept";
         }, $all_numbers));
         
-        $url = "data/printTickets.php?type=batch&plan=$plan_name&accounts=Username,Password$accounts_str";
+        $urls = [
+            'printTickets1.php' => "data/printTickets1.php?type=batch&plan=$plan_name&accounts=Username,Password$accounts_str",
+            'printTickets2.php' => "data/printTickets2.php?type=batch&plan=$plan_name&accounts=Username,Password$accounts_str",
+            'printTickets3.php' => "data/printTickets3.php?type=batch&plan=$plan_name&accounts=Username,Password$accounts_str",
+            'printTickets4.php' => "data/printTickets4.php?type=batch&plan=$plan_name&accounts=Username,Password$accounts_str"
+        ];
 
         echo "<tr>";
         echo "<td><center>$batch_name</center></td>";
@@ -250,7 +255,13 @@ if ($result->num_rows > 0) {
                     <input type='hidden' name='id' value='$batch_id'>
                     <input type='hidden' name='action' value='delete'>
                     <button type='submit' class='btn btn-danger btn-sm'><i class='fa6-solid--trash-can'></i></button>
-                    <button type='button' class='btn btn-success btn-sm' onclick=\"window.open('$url', '_blank')\"><i class='ion-android-print'></i></button>
+                <select class='btn btn-warning' id='selectPrinter$batch_id'>
+                    <option value='printTickets1.php'>1</option>
+                    <option value='printTickets2.php'>2</option>
+                    <option value='printTickets3.php'>3</option>
+                    <option value='printTickets4.php'>4</option>
+                </select>
+                <button type='button' class='btn btn-success btn-sm' onclick=\"printTicket('$batch_id', '$plan_name')\"><i class='ion-android-print'></i></button>
                 </form>
             </center></td>";
         echo "</tr>";
@@ -283,7 +294,10 @@ echo"
         <div></div>
     </section>
 </main>
-"; ?>
+";
+
+?>
+
 <footer class="app-footer"> <!--begin::To the end-->
             <div class="float-end d-none d-sm-inline">Themes by <a href="https://adminlte.io" target="_blank" class="text-decoration-none">AdminLTE.io</a></div>
                 Radius Monitor by 
@@ -293,7 +307,26 @@ echo"
         </footer> <!--end::Footer-->
     </div> <!--end::App Wrapper--> <!--begin::Script--> <!--begin::Third Party Plugin(OverlayScrollbars)-->
 <script src="../../dist/js/adminlte.js"></script> <!--end::Required Plugin(AdminLTE)--><!--begin::OverlayScrollbars Configure-->
-
+<script>
+function printTicket(batchId, planName) {
+    var printerSelect = document.getElementById('selectPrinter' + batchId);
+    var selectedPrinter = printerSelect.value;
+    
+    var urls = {
+        'printTickets1.php': 'data/printTickets1.php',
+        'printTickets2.php': 'data/printTickets2.php',
+        'printTickets3.php': 'data/printTickets3.php',
+        'printTickets4.php': 'data/printTickets4.php'
+    };
+    
+    var baseUrl = urls[selectedPrinter];
+    var accountsStr = '||' + <?php echo json_encode(implode('||', array_map(function($num) {
+        return "$num,Accept";
+    }, $all_numbers))); ?>;
+    var url = baseUrl + "?type=batch&plan=" + encodeURIComponent(planName) + "&accounts=Username,Password" + accountsStr;
+    window.open(url, '_blank');
+}
+</script>
 <?php
 try {
     $dsn = 'mysql:host=127.0.0.1;dbname=radius';
