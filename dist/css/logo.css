@@ -408,10 +408,10 @@
     width: 80px !important;
 }
 .kecil {
-    padding: 12px; /* Mengurangi padding untuk ukuran lebih kecil */
-    font-size: 11px; /* Mengurangi ukuran font */
-    border: 1px solid #ddd; /* Border tipis */
-    border-radius: 8px; /* Sudut yang membulat */
+    padding: 12px;
+    font-size: 11px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
     box-sizing: border-box;
 }
 
@@ -426,7 +426,31 @@ input[type="submit"].kecil {
 input[type="submit"].kecil:hover {
     background-color: #0056b3;
 }
+.big-input {
+    width: 120px !important;
+}
+.small-input {
+    width: 80px !important;
+}
+.kecil {
+    padding: 12px;
+    font-size: 11px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    box-sizing: border-box;
+}
+input[type="submit"].kecil {
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
 .status-running {
     color: green;
+    font-weight: bold;
+}
+.status-not-running {
+    color: red;
     font-weight: bold;
 }
