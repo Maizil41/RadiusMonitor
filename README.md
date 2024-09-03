@@ -19,7 +19,7 @@ Packages Needed
 - php `7` or `8`
 - php-mod-mysqli, php-mod-pdo-mysql, php-mod-curl, php-mod-gd
 
-Auto Script Instaler For Openwrt
+Auto Script Installer For Openwrt
 ---
 
 - Openwrt 21
