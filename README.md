@@ -19,6 +19,7 @@ Packages Needed
 - php 7 or 8
 - php-mod-mysqli, php-mod-pdo-mysql, php-mod-curl, php-mod-gd
 
+---
 Features
 ---
 - Add, Edit & Remove Plans
@@ -32,12 +33,14 @@ Features
 - Database Restore & Backup
 - QRCode Tickets support
 
+---
 Credit
 ---
 <ul>
   <li><a href="https://t.me/maizil41" target="_blank">Maizil</a></li>
 </ul>
 
+---
 Screenshoot
 ---
 <details><summary>Dashboard</summary>
