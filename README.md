@@ -15,7 +15,7 @@ Packages Needed
 
 - MySQL
 - Freeradius3
-- Coova-Chilli (`For Loginpage`)
+- Coova-Chilli `(For Loginpage)`
 - php `7` or `8`
 - php-mod-mysqli, php-mod-pdo-mysql, php-mod-curl, php-mod-gd
 
