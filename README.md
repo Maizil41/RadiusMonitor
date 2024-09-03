@@ -19,18 +19,6 @@ Packages Needed
 - php `7` or `8`
 - php-mod-mysqli, php-mod-pdo-mysql, php-mod-curl, php-mod-gd
 
-Auto Script Installer For Openwrt
----
-
-- Openwrt 21 `PHP7`
-
-`Coming Soon`
-
-- Openwrt 22 / 23 `PHP8`
-
-`Coming Soon`
-
-
 Features
 ---
 - Add, Edit & Remove Plans
