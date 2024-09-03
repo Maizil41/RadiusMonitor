@@ -15,7 +15,7 @@ require './auth.php';
 
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-    <title>RadiusMonitor | System Information</title><!--begin::Primary Meta Tags-->
+    <title>RadiusMonitor | Php Admin</title><!--begin::Primary Meta Tags-->
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="author" content="ColorlibHQ">
     <meta name="description" content="AdminLTE is a Free Bootstrap 5 Admin Dashboard, 30 example pages using Vanilla JS.">
