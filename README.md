@@ -35,7 +35,7 @@ Features
 Credit
 ---
 <ul>
-  <li><a href="https://link-anda.com" target="_blank">Maizil</a></li>
+  <li><a href="https://t.me/maizil41" target="_blank">Maizil</a></li>
 </ul>
 
 Screenshoot
