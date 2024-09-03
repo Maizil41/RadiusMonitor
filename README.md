@@ -30,7 +30,17 @@
 * QRCode Tickets support
 * ========================================================================
 
-![Screenshot1](https://github.com/Maizil41/RadiusMonitor/blob/main/Capture1.PNG)
+Screenshoot
+---
+<details><summary>Dashboard</summary>
+ <p>
+  <img src="https://github.com/Maizil41/RadiusMonitor/blob/main/Capture1.PNG" alt="dashboard">
+ </p>
+</details>
 
-![Screenshot2](https://github.com/Maizil41/RadiusMonitor/blob/main/Capture2.PNG)
+<details><summary>System</summary>
+ <p>
+  <img src="https://github.com/Maizil41/RadiusMonitor/blob/main/Capture2.PNG" alt="system">
+ </p>
+</details>
 
