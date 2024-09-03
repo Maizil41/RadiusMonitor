@@ -15,7 +15,7 @@ require './auth.php';
 
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-    <title>RadiusMonitor | List Users</title><!--begin::Primary Meta Tags-->
+    <title>RadiusMonitor | Mac Binding</title><!--begin::Primary Meta Tags-->
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="author" content="ColorlibHQ">
     <meta name="description" content="AdminLTE is a Free Bootstrap 5 Admin Dashboard, 30 example pages using Vanilla JS.">
@@ -187,15 +187,12 @@ function time2str($time) {
     return rtrim($str, ', ');
 }
 
-// Ambil status dari query string, jika ada
 $statusFilter = isset($_GET['status']) ? $_GET['status'] : '';
 
-// Ambil halaman saat ini dari query string, default ke 1 jika tidak ada
 $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
-$limit = 10; // Jumlah baris per halaman
-$offset = ($page - 1) * $limit; // Hitung offset
+$limit = 10;
+$offset = ($page - 1) * $limit;
 
-// Query untuk menghitung total jumlah baris
 $total_query = "SELECT COUNT(DISTINCT r.username) as total_users 
 FROM radcheck r 
 LEFT JOIN (
@@ -227,7 +224,6 @@ $total_users = $total_row['total_users'];
 $total_pages = ceil($total_users / $limit);
 
 
-// Query utama dengan filter status, limit, dan offset
 $query = "WITH LatestAcct AS (
     SELECT username,
            MAX(acctstarttime) AS latest_acctstarttime
@@ -249,6 +245,7 @@ StatusData AS (
 ),
 AggregatedData AS (
     SELECT r.username,
+           uinfo.firstname AS user_alias,
            u.planName,
            p.planCost,
            ugr.groupname,
@@ -262,11 +259,13 @@ AggregatedData AS (
     LEFT JOIN billing_plans p ON u.planName = p.planName
     LEFT JOIN radusergroup ugr ON r.username = ugr.username
     LEFT JOIN radacct a ON r.username = a.username
+    LEFT JOIN userinfo uinfo ON r.username = uinfo.username  -- Menggabungkan tabel userinfo
     WHERE r.username REGEXP '^[0-9A-Fa-f]{2}([-:]?)[0-9A-Fa-f]{2}([-:]?)[0-9A-Fa-f]{2}([-:]?)[0-9A-Fa-f]{2}([-:]?)[0-9A-Fa-f]{2}([-:]?)[0-9A-Fa-f]{2}$'
-    GROUP BY r.username, u.planName, p.planCost, ugr.groupname
+    GROUP BY r.username, uinfo.firstname, u.planName, p.planCost, ugr.groupname
 ),
 FinalData AS (
     SELECT ad.username,
+           ad.user_alias,
            ad.planName,
            ad.planCost,
            ad.groupname,
@@ -308,6 +307,7 @@ echo "
         <table class='table table-bordered table-condensed table-striped table_mobile'>
     <thead>
 <tr>
+    <th><center>Name</th>
     <th><center>Mac Address</th>
     <th><center>IP Address</th>
     <th><center>Cost</th>
@@ -322,6 +322,7 @@ echo "
 
 if ($result->num_rows > 0) {
     while ($row = $result->fetch_assoc()) {
+        $name = htmlspecialchars($row['user_alias']);
         $username = htmlspecialchars($row['username']);
         $ip = htmlspecialchars($row['ip_address']);
         $cost = htmlspecialchars(money($row['planCost']));
@@ -345,7 +346,8 @@ if ($result->num_rows > 0) {
                 break;
         }
 
-echo"       
+echo"
+            <td><center>$name</td>
             <td><center>$username</td>
             <td><center>$ip</td>
             <td><center>$cost</td>

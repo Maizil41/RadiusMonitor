@@ -15,7 +15,7 @@ require './auth.php';
 
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-    <title>RadiusMonitor | Add Users</title><!--begin::Primary Meta Tags-->
+    <title>RadiusMonitor | Add Mac</title><!--begin::Primary Meta Tags-->
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="author" content="ColorlibHQ">
     <meta name="description" content="AdminLTE is a Free Bootstrap 5 Admin Dashboard, 30 example pages using Vanilla JS.">
@@ -135,6 +135,14 @@ require './auth.php';
         <div class="panel-body">
             <form class="form-horizontal" method="post" role="form" action="./add_mac.php">
                 <div class="form-group">
+                    <label for="useraliasTop" class="col-md-2 control-label">Name</label>
+                    <div class="col-md-6">
+                        <input type="text" id="useraliasTop" class="form-control" name="useralias" placeholder="Name" maxlength="12" required>
+                    </div>
+                </div>
+                
+                <!-- Ini ytta -->
+                <div class="form-group">
                     <label for="planDropup" class="col-md-2 control-label">Select Plan</label>
                     <div class="col-md-6">
                         <select id="planDropup" name="planName" class="form-select" autocomplete="off">
@@ -142,16 +150,35 @@ require './auth.php';
                         </select>
                     </div>
                 </div>
-                
+
+                <!-- Ini Mac type -->
                 <div class="form-group">
+                    <label class="col-md-2 control-label">Mac Type</label>
+                    <div class="col-md-10">
+                        <input type="radio" id="Select" name="typebp" value="Select" checked onclick="toggleMacInput()"> Select
+                        <input type="radio" id="Manual" name="typebp" value="Manual" onclick="toggleMacInput()"> Manual
+                    </div>
+                </div>
+                
+                <!-- Ini mac select -->
+                <div class="form-group" id="macSelect">
                     <label for="macDropdown" class="col-md-2 control-label">Mac Address</label>
                     <div class="col-md-6">
-                        <select id="macDropdown" name="username" class="form-select" autocomplete="off">
+                        <select id="macDropdown" name="macSelect" class="form-select" autocomplete="off">
                             <option value="">Select Mac</option>
                         </select>
                     </div>
                 </div>
+
+                <!-- Ini mac manual -->
+                <div class="form-group" id="macManual" style="display:none;">
+                    <label for="usernameTop" class="col-md-2 control-label">Mac Address</label>
+                    <div class="col-md-6">
+                        <input type="text" id="usernameTop" class="form-control" name="macManual" placeholder="Mac Address" maxlength="17" autocomplete="on">
+                    </div>
+                </div>
                 
+                <!-- Ini ytta -->
                 <div class="form-group">
                     <div class="col-lg-offset-2 col-lg-10">
                         <button class="btn btn-primary" type="submit" name="addUser" value="top">Add</button>
@@ -163,23 +190,36 @@ require './auth.php';
     </div>
 </div>
 </main>
-        <footer class="app-footer"> <!--begin::To the end-->
-            <div class="float-end d-none d-sm-inline">Themes by <a href="https://adminlte.io" target="_blank" class="text-decoration-none">AdminLTE.io</a></div>
-                Radius Monitor by 
-                <a href="https://github.com/Maizil41" target="_blank" class="text-decoration-none">Maizil41</a>
-            </strong>
-            <!--end::Copyright-->
-        </footer> <!--end::Footer-->
-    </div> <!--end::App Wrapper--> <!--begin::Script--> <!--begin::Third Party Plugin(OverlayScrollbars)-->
-<script src="../../dist/js/adminlte.js"></script> <!--end::Required Plugin(AdminLTE)--><!--begin::OverlayScrollbars Configure-->
+
+<footer class="app-footer">
+    <div class="float-end d-none d-sm-inline">Themes by <a href="https://adminlte.io" target="_blank" class="text-decoration-none">AdminLTE.io</a></div>
+    Radius Monitor by <a href="https://github.com/Maizil41" target="_blank" class="text-decoration-none">Maizil41</a>
+</footer>
+
+<script src="../../dist/js/adminlte.js"></script>
+
+<script>
+    function toggleMacInput() {
+        var select = document.getElementById('Select');
+        var macSelect = document.getElementById('macSelect');
+        var macManual = document.getElementById('macManual');
+
+        if (select.checked) {
+            macSelect.style.display = 'block';
+            macManual.style.display = 'none';
+        } else {
+            macSelect.style.display = 'none';
+            macManual.style.display = 'block';
+        }
+    }
+</script>
+
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // Fetch data untuk dropdown plan
         fetch('../pages/api/radgroup.php')
             .then(response => response.json())
             .then(data => {
                 let planDropdown = document.getElementById('planDropup');
-
                 data.plans.forEach(item => {
                     let option = document.createElement('option');
                     option.value = item.planName;
@@ -189,12 +229,10 @@ require './auth.php';
             })
             .catch(error => console.error('Error:', error));
 
-        // Fetch data untuk dropdown MAC address
         fetch('../pages/api/mac_address.php')
             .then(response => response.json())
             .then(data => {
                 let macDropdown = document.getElementById('macDropdown');
-
                 data.data.forEach(item => {
                     let option = document.createElement('option');
                     option.value = item.mac_address;
@@ -205,41 +243,50 @@ require './auth.php';
             .catch(error => console.error('Error:', error));
     });
 </script>
+
 <?php
 // Konfigurasi database
-$host = "127.0.0.1"; // Ganti dengan host database Anda
-$user = "radius"; // Ganti dengan username database Anda
-$password = "radius"; // Ganti dengan password database Anda
-$dbname = "radius"; // Ganti dengan nama database Anda
+$host = "127.0.0.1";
+$user = "radius";
+$password = "radius";
+$dbname = "radius";
 
-// Membuat koneksi
 $conn = new mysqli($host, $user, $password, $dbname);
 
-// Memeriksa koneksi
 if ($conn->connect_error) {
     die("Koneksi gagal: " . $conn->connect_error);
 }
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    // Mengambil data dari form
-    $code = $_POST['username'];
+    $firstname = $_POST['useralias'];
     $plan_name = isset($_POST['planName']) ? trim($_POST['planName']) : '';
     $now = date('Y-m-d H:i:s');
 
-    // Memeriksa data yang diperlukan
-    if (!empty($code) && !empty($plan_name)) {
-        try {
-            // Memulai transaksi
-            $conn->begin_transaction();
+    $code = '';
+    if (isset($_POST['typebp']) && $_POST['typebp'] == 'Select') {
+        $code = $_POST['macSelect'];
+    } elseif (isset($_POST['typebp']) && $_POST['typebp'] == 'Manual') {
+        $code = $_POST['macManual'];
 
-            // Memeriksa apakah username sudah ada di database
+        if (preg_match('/^([0-9A-Fa-f]{2}-){5}[0-9A-Fa-f]{2}$/', $code) || preg_match('/^([0-9A-Fa-f]{2}:){5}[0-9A-Fa-f]{2}$/', $code)) {
+            $code = strtoupper(str_replace(':', '-', $code));
+        } else {
+            echo "<script>alert('Format MAC address tidak valid. Gunakan format seperti : C8-16-DA-4F-47-C9 atau C8:16:DA:4F:47:C9'); window.location.href = 'add_mac.php';</script>";
+            exit();
+        }
+    }
+
+    if (!empty($code) && !empty($plan_name)) {
+        // Logika untuk menyimpan ke database
+        try {
+            $conn->begin_transaction();
+            // cek apakah username sudah ada
             $stmt = $conn->prepare("SELECT username FROM radcheck WHERE username = ?");
             $stmt->bind_param("s", $code);
             $stmt->execute();
             $stmt->store_result();
-            
+
             if ($stmt->num_rows > 0) {
-                // Username sudah ada, berikan pesan kesalahan
                 echo "<script>alert('Mac address sudah terdaftar di database.'); window.location.href = 'add_mac.php';</script>";
                 $stmt->close();
                 $conn->close();
@@ -247,9 +294,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             }
             $stmt->close();
 
-            // Menjalankan query berdasarkan tombol yang diklik
+            // Logika insert data ke database
             if (isset($_POST['addUser']) && $_POST['addUser'] == 'top') {
-                // Query pertama
                 $stmt = $conn->prepare("INSERT INTO radcheck (username, attribute, op, value) VALUES (?, ?, ?, ?)");
                 $stmt->bind_param("ssss", $code, $attribute, $op, $value);
                 $attribute = "Auth-Type";
@@ -258,17 +304,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 $stmt->execute();
                 $stmt->close();
 
-                // Query kedua
                 $stmt = $conn->prepare("INSERT INTO radusergroup (username, groupname, priority) VALUES (?, ?, ?)");
                 $stmt->bind_param("sss", $code, $plan_name, $priority);
                 $priority = "0";
                 $stmt->execute();
                 $stmt->close();
 
-                // Query ketiga
                 $stmt = $conn->prepare("INSERT INTO userinfo (username, firstname, lastname, email, department, company, workphone, homephone, mobilephone, address, city, state, country, zip, notes, changeuserinfo, portalloginpassword, creationdate, creationby) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
                 $stmt->bind_param("sssssssssssssssssss", $code, $firstname, $lastname, $email, $department, $company, $workphone, $homephone, $mobilephone, $address, $city, $state, $country, $zip, $notes, $changeuserinfo, $portalloginpassword, $now, $creationby);
-                $firstname = '';
                 $lastname = '';
                 $email = '';
                 $department = '';
@@ -288,7 +331,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 $stmt->execute();
                 $stmt->close();
 
-                // Query keempat
                 $stmt = $conn->prepare("INSERT INTO userbillinfo (username, planName, contactperson, company, email, phone, address, city, state, country, zip, paymentmethod, cash, creditcardname, creditcardnumber, creditcardverification, creditcardtype, creditcardexp, notes, changeuserbillinfo, lead, coupon, ordertaker, billstatus, nextinvoicedue, billdue, postalinvoice, faxinvoice, emailinvoice, creationdate, creationby) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
                 $stmt->bind_param("sssssssssssssssssssssssssssssss", $code, $plan_name, $contactperson, $company, $email, $phone, $address, $city, $state, $country, $zip, $paymentmethod, $cash, $creditcardname, $creditcardnumber, $creditcardverification, $creditcardtype, $creditcardexp, $notes, $changeuserbillinfo, $lead, $coupon, $ordertaker, $billstatus, $nextinvoicedue, $billdue, $postalinvoice, $faxinvoice, $emailinvoice, $now, $creationby);
                 $contactperson = '';
@@ -322,15 +364,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 $stmt->execute();
                 $stmt->close();
 
-                // Komit transaksi
                 $conn->commit();
 
                 echo "<script>window.location.href = 'mac_binding.php';</script>";
-
             }
 
         } catch (Exception $e) {
-            // Rollback transaksi jika terjadi kesalahan
             $conn->rollback();
             echo "<script>alert('Error: " . $e->getMessage() . "'); window.location.href = 'add_mac.php';</script>";
         }
@@ -338,10 +377,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         echo "<script>alert('Semua data harus diisi.'); window.location.href = 'add_mac.php';</script>";
     }
 
-    // Menutup koneksi
     $conn->close();
 }
-
 ?>
 </body>
 </html>
