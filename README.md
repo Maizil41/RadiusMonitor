@@ -1,3 +1,7 @@
+<h1 align="center">
+  RADIUS HOTSPOT MONITOR FOR OPENWRT
+</h1>
+
 <div align="center">
  <a target="_blank" href="https://github.com/Maizil41/RadiusMonitor/releases"><img src="https://img.shields.io/github/downloads/Maizil41/RadiusMonitor/total?label=Total%20Download&labelColor=blue&style=for-the-badge"></a>
  <a target="_blank" href="https://t.me/mutiara_wrt">
@@ -6,29 +10,27 @@
 
 </div>
 
-### RADIUS HOTSPOT MONITOR FOR OPENWRT
+Packages Needed
+---
 
-* **PACKAGES NEEDED**
-* ========================================================================
-* MySQL
-* Freeradius3
-* Coova-Chilli (For Loginpage)
-* php minimum version 7
-* php-mod-mysqli, php-mod-pdo-mysql, php-mod-curl, php-mod-gd
-* ========================================================================
-* **FEATURES**
-* ========================================================================
-* Add, Edit & Remove Plans
-* Add & Remove Bandwidth
-* Add & Remove Users
-* Add & Remove Batch
-* Mac Binding Support
-* Disconnect Users
-* Testing Users using Radtest
-* Income Calculation
-* Database Restore & Backup
-* QRCode Tickets support
-* ========================================================================
+- MySQL
+- Freeradius3
+- Coova-Chilli (For Loginpage)
+- php 7 or 8
+- php-mod-mysqli, php-mod-pdo-mysql, php-mod-curl, php-mod-gd
+
+Features
+---
+- Add, Edit & Remove Plans
+- Add & Remove Bandwidth
+- Add & Remove Users
+- Add & Remove Batch
+- Mac Binding Support
+- Disconnect Users
+- Testing Users using Radtest
+- Income Calculation
+- Database Restore & Backup
+- QRCode Tickets support
 
 Screenshoot
 ---
