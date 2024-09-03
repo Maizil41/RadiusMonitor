@@ -1,5 +1,3 @@
-<div align="center">
- <a target="_blank" href="https://github.com/Maizil41/RadiusMonitor/releases"><img src="https://img.shields.io/github/downloads/Maizil41/RadiusMonitor/total?label=Total%20Download&labelColor=blue&style=for-the-badge">
 ### RADIUS HOTSPOT MONITOR FOR OPENWRT
 
 * **PACKAGES NEEDED**
