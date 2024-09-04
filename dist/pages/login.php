@@ -11,12 +11,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $stmt->execute([$username]);
     $user = $stmt->fetch();
 
-    if ($user && $user['password']) {
+    if ($user && $user['password'] === $password) {
         $_SESSION['username'] = $username;
         header("Location: ./index.php");
         exit();
     } else {
-        // Login gagal
         $_SESSION['error'] = "Username atau password salah.";
         header("Location: login.php");
         exit();
