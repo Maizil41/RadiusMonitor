@@ -129,6 +129,11 @@ require './auth.php';
 <h3 class="mb-0">Add Mac</h3>
 </div> <!--end::Row-->
 </div> <!--end::Container-->
+<div id="overlay" class="overlay"></div>
+<div id="errorPopup" class="confirm-popup">
+    <center><p id="popupMessage"></p>
+    <center><button onclick="closePopup()">OK</button>
+</div>
 <div class="col-sm-12 col-md-12">
     <div class="panel panel-primary panel-hovered panel-stacked mb30">
         <div class="panel-heading">Add New Mac</div>
@@ -197,7 +202,30 @@ require './auth.php';
 </footer>
 
 <script src="../../dist/js/adminlte.js"></script>
+    
+<script>
+    function showPopup(message) {
+        document.getElementById('popupMessage').innerText = message;
+        document.getElementById('overlay').classList.add('show');
+        document.getElementById('errorPopup').classList.add('show');
+    }
 
+    function closePopup() {
+        document.getElementById('overlay').classList.remove('show');
+        document.getElementById('errorPopup').classList.remove('show');
+        window.location.href = 'add_mac.php';
+    }
+
+    // Menampilkan popup berdasarkan parameter URL
+    window.onload = function() {
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.has('error')) {
+            const errorMessage = urlParams.get('error');
+            showPopup(errorMessage);
+        }
+    }
+</script>
+    
 <script>
     function toggleMacInput() {
         var select = document.getElementById('Select');
@@ -271,7 +299,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         if (preg_match('/^([0-9A-Fa-f]{2}-){5}[0-9A-Fa-f]{2}$/', $code) || preg_match('/^([0-9A-Fa-f]{2}:){5}[0-9A-Fa-f]{2}$/', $code)) {
             $code = strtoupper(str_replace(':', '-', $code));
         } else {
-            echo "<script>alert('Format MAC address tidak valid. Gunakan format seperti : C8-16-DA-4F-47-C9 atau C8:16:DA:4F:47:C9'); window.location.href = 'add_mac.php';</script>";
+            echo "<script>window.location.href = 'add_mac.php?error=Format MAC address tidak valid. Gunakan format seperti : C8-16-DA-4F-47-C9 atau C8:16:DA:4F:47:C9';</script>";
             exit();
         }
     }
@@ -287,7 +315,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $stmt->store_result();
 
             if ($stmt->num_rows > 0) {
-                echo "<script>alert('Mac address sudah terdaftar di database.'); window.location.href = 'add_mac.php';</script>";
+                echo "<script>window.location.href = 'add_mac.php?error=Mac address sudah terdaftar di database.';</script>";
                 $stmt->close();
                 $conn->close();
                 exit();
@@ -371,10 +399,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
         } catch (Exception $e) {
             $conn->rollback();
-            echo "<script>alert('Error: " . $e->getMessage() . "'); window.location.href = 'add_mac.php';</script>";
+            echo "<script>window.location.href = 'add_mac.php?error=Error: " . addslashes($e->getMessage()) . "';</script>";
         }
     } else {
-        echo "<script>alert('Semua data harus diisi.'); window.location.href = 'add_mac.php';</script>";
+        echo "<script>window.location.href = 'add_mac.php?error=Semua data harus diisi.';</script>";
     }
 
     $conn->close();

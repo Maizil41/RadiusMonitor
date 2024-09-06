@@ -122,7 +122,6 @@ foreach ($log as $line) {
     <link rel="stylesheet" href="../../dist/css/logo.css">
     <link rel="stylesheet" href="../../dist/css/bootstrap.css">
     <link rel="icon" href="../../dist/assets/img/favicon.svg" />
-    <script>function deleteUser(username){if(confirm("Apakah Anda yakin ingin menghapus pengguna "+username+" ?")){window.location.href="list_user.php?id="+username}}</script>
 </head> <!--end::Head--> <!--begin::Body-->
 
 <body class="layout-fixed sidebar-expand-lg bg-body-tertiary"> <!--begin::App Wrapper-->
@@ -228,7 +227,19 @@ foreach ($log as $line) {
 <h3 class="mb-0">System Database</h3>
 </div> <!--end::Row-->
 </div> <!--end::Container-->
-
+<!-- Popup Overlay -->
+<div id="overlay" class="overlay"></div>
+<!-- Popup Alert -->
+<div id="alertPopup" class="confirm-popup">
+    <p id="alertMessage">Pesan alert</p>
+    <button id="alertOk">OK</button>
+</div>
+<!-- Popup Konfirmasi -->
+<div id="confirmPopup" class="confirm-popup">
+    <p id="confirmMessage"></p>
+    <button id="confirmYes">Yes</button>
+    <button id="confirmNo" class="cancel">No</button>
+</div>
 <div class='col-sm-12'>
     <div class='panel panel-hovered mb20 panel-primary'>
         <div class='panel-heading'>Database Management</div>
@@ -287,12 +298,49 @@ Radius Monitor by
 function handleRestore() {
     var fileInput = document.getElementById('sqlFile');
     if (!fileInput.files.length) {
-        alert('File tidak ada. Harap pilih file terlebih dahulu.');
+        // Tampilkan popup alert kustom
+        showAlertPopup('File tidak ada. Harap pilih file terlebih dahulu.');
     } else {
-        if (confirm('Apakah Anda yakin ingin melanjutkan dengan file yang dipilih?')) {
+        // Tampilkan popup konfirmasi kustom
+        showConfirmPopup('Apakah Anda yakin ingin mengganti database dengan file yang dipilih?', function() {
             document.getElementById('restoreForm').submit();
-        }
+        });
     }
+}
+
+function showAlertPopup(message) {
+    document.getElementById('alertMessage').innerText = message;
+    document.getElementById('overlay').classList.add('show');
+    document.getElementById('alertPopup').classList.add('show');
+}
+
+function closeAlertPopup() {
+    document.getElementById('overlay').classList.remove('show');
+    document.getElementById('alertPopup').classList.remove('show');
+}
+
+document.getElementById('alertOk').onclick = function() {
+    closeAlertPopup();
+};
+
+function showConfirmPopup(message, onConfirm) {
+    document.getElementById('confirmMessage').innerText = message;
+    document.getElementById('overlay').classList.add('show');
+    document.getElementById('confirmPopup').classList.add('show');
+
+    document.getElementById('confirmYes').onclick = function() {
+        closeConfirmPopup();
+        onConfirm();
+    };
+
+    document.getElementById('confirmNo').onclick = function() {
+        closeConfirmPopup();
+    };
+}
+
+function closeConfirmPopup() {
+    document.getElementById('overlay').classList.remove('show');
+    document.getElementById('confirmPopup').classList.remove('show');
 }
 </script>
 </body>

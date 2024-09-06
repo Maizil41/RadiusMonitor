@@ -454,3 +454,56 @@ input[type="submit"].kecil {
     color: red;
     font-weight: bold;
 }
+    .overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 999;
+    }
+
+    .confirm-popup {
+        display: none;
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        padding: 20px;
+        background-color: white;
+        border-radius: 8px;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        z-index: 1000;
+        max-width: 90%;
+        width: 300px;
+        text-align: center;
+    }
+
+    .confirm-popup button {
+        background-color: #007bff;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        cursor: pointer;
+        border-radius: 4px;
+        font-size: 16px;
+        margin: 5px;
+    }
+
+    .confirm-popup button.cancel {
+        background-color: #ccc;
+    }
+
+    .confirm-popup button.cancel:hover {
+        background-color: #999;
+    }
+
+    .confirm-popup button:hover {
+        background-color: #0056b3;
+    }
+
+    .confirm-popup.show, .overlay.show {
+        display: block;
+    }

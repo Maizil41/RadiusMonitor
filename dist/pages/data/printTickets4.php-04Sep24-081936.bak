@@ -126,105 +126,121 @@ function printTicketsHTMLTable($accounts, $ticketCost, $ticketTime, $ticketQuota
 
 ?>
 <!DOCTYPE html>
-<html>
-	<head>
-		<title><?php echo $timestamp ?></title>
-		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-		<meta http-equiv="pragma" content="no-cache" />
-		<link rel="icon" href="assets/img/favicon.png" />
-		<script src="assets/js/jquery.min.js"></script>
-		<style>
-			body {
-				color: #000000;
-				background-color: #FFFFFF;
-				font-size: 14px;
-				font-family:  'Helvetica', arial, sans-serif;
-				margin: 0px;
-				-webkit-print-color-adjust: exact;
-			}
-			table.voucher {
-				display: inline-block;
-				border: 2px solid black;
-				margin: 2px;
-			}
-			@page
-			{
-				size: auto;
-				margin-left: 7mm;
-				margin-right: 3mm;
-				margin-top: 9mm;
-				margin-bottom: 3mm;
-			}
-			@media print
-			{
-				table { page-break-after:auto }
-				tr    { page-break-inside:avoid; page-break-after:auto }
-				td    { page-break-inside:avoid; page-break-after:auto }
-				thead { display:table-header-group }
-				tfoot { display:table-footer-group }
-			}
-			.rotate {
-				max-width: 15px;
-				white-space: nowrap;
-				vertical-align: bottom;
-				padding-right: 5px;
-			}
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="pragma" content="no-cache">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><?php echo $timestamp; ?></title>
+    <link rel="icon" href="assets/img/favicon.png">
+    <script src="assets/js/jquery.min.js"></script>
+    <style>
+        body {
+            color: #000;
+            background-color: #FFF;
+            font-size: 14px;
+            font-family: 'Helvetica', Arial, sans-serif;
+            margin: 0;
+            -webkit-print-color-adjust: exact;
+            justify-content: center;
+            align-items: center;
+        }
 
-			.rotate > div {
-				transform: rotate(-90deg);
-			}
-			.qrcode{
-				height:100px;
-				width:100px;
-			}
-			.price{
-				font-size:20px;
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            height: 100%;
+            width: 100%;
+        }
 
-			}
+        table.voucher {
+            border: 2px solid black;
+            margin: 2px;
+            width: 180px;
+            margin-bottom: 10px;
+        }
 
-		</style>
-	</head>
+        @page {
+            size: auto;
+            margin: 7mm 3mm 3mm 7mm;
+        }
+
+        @media print {
+            table { page-break-after: auto; }
+            tr { page-break-inside: avoid; page-break-after: auto; }
+            td { page-break-inside: avoid; page-break-after: auto; }
+            thead { display: table-header-group; }
+            tfoot { display: table-footer-group; }
+        }
+
+        .qrcode {
+            height: 100px;
+            width: 100px;
+        }
+
+        .price {
+            font-size: 20px;
+        }
+
+        .header-title {
+            text-align: center;
+            font-size: 14px;
+            border-bottom: 1px solid black;
+        }
+
+        .header-title span {
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        .user-info, .price-info, .footer-info {
+            text-align: center;
+            font-size: 14px;
+            font-weight: bold;
+            border-top: 1px solid black;
+        }
+
+        .footer-info {
+            font-size: 12px;
+        }
+    </style>
+</head>
 <body>
-<table class="voucher" style=" width: 180px;">
-	<tbody>
-		<tr>
-			<td style="text-align: center; font-size: 14px; border-bottom: 1px black solid;">
-			<center><span style="font-size: 25px;font-weight: bold;">𝗠𝗨𝗧𝗜𝗔𝗥𝗔.<span style="color:<?php echo $color; ?>;">𝗡𝗘𝗧</center>
-			<span><?php echo $timestamp ?></span>
-			</td>
-		</tr>
-		<tr>
-			<td>
-				<table style=" text-align: center; width: 170px; font-size: 12px;">
-					<tbody>
-						<tr>
-							<td>
-                            <table style="width:100%;height:100%;">
+    <div class="container">
+        <table class="voucher">
+            <tbody>
+                <tr>
+                    <td class="header-title">
+                        <center><span>𝗠𝗨𝗧𝗜𝗔𝗥𝗔.<span style="color:<?php echo $color; ?>;">𝗡𝗘𝗧</span></center>
+                        <center><?php echo $timestamp; ?>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <table style="width: 100%; font-size: 12px;">
+                            <tbody>
                                 <tr>
-                                    <td style="width: 50%">Username</td>
+                                    <td><center>Username</td>
                                     <?php if ($pass !== "Accept"): ?>
                                         <td>Password</td>
                                     <?php endif; ?>
                                 </tr>
-                                <tr>
-                                <tr style="font-size: 14px;"></td>
-                                    <td style="border: 1px solid black; font-weight:bold;"><?php echo $user; ?></td>
+                                <tr style="font-size: 14px;">
+                                    <td style="border: 1px solid black;"><center><?php echo $user; ?></td>
                                     <?php if ($pass !== "Accept"): ?>
-                                    <td style="border: 1px solid black; font-weight:bold;"><?php echo $pass; ?></td>
+                                        <td style="border: 1px solid black;"><center><?php echo $pass; ?></td>
                                     <?php endif; ?>
                                 </tr>
-                            </table>
-							</td>
-						</tr>
-
-						<tr>
-							<td colspan="2" style="border-top: 1px solid black;font-weight:bold; font-size:14px"><span class="validity"><?php echo $ticketActiveTime;?></span> <?php echo $ticketTime;?></span> <?php echo $ticketQuota;?></span></td>
-						</tr>
-						<tr>
-							<td><span class="price">Rp <?php echo $ticketCost;?></span></td>
-						</tr>
-						<tr>
-							<td colspan="2">
+                                <tr class="user-info">
+                                    <td colspan="2"><center><?php echo $ticketActiveTime; ?> <?php echo $ticketTime; ?> <?php echo $ticketQuota; ?></td>
+                                </tr>
+                                <tr class="price-info">
+                                    <td colspan="2"><center>Rp <?php echo $ticketCost; ?></td>
+                                </tr>
+                                <tr>
+                                    <td colspan="2">
                             <?php
                                 $tempdir = "tmp/";
 
@@ -235,18 +251,18 @@ function printTicketsHTMLTable($accounts, $ticketCost, $ticketTime, $ticketQuota
 
                                             $errorCorrectionLevel = 'L';
 
-                                            $matrixPointSize = min(max((int)($_REQUEST['size'] ?? 4), 2), 5);
+                                            $matrixPointSize = min(max((int)($_REQUEST['size'] ?? 10), 2), 5);
 
                                             $qrcodeFilename = $tempdir . $user . '.png';
 
                                             QRcode::png($qrcodeData, $qrcodeFilename, $errorCorrectionLevel, $matrixPointSize, 2);
 
-                                            echo '<img src="' . htmlspecialchars($qrcodeFilename) . '" alt="QR Code">';
+                                            echo '<center><img src="' . htmlspecialchars($qrcodeFilename) . '" alt="QR Code">';
                                         ?>
                                     <td>
 						        </tr>
 						    <tr>
-							<td colspan="2" style="font-weight:bold; font-size:12px">Login: <?php echo $dnsname;?></td>
+							<td colspan="2" style="font-weight:bold; font-size:12px"><center>Login: <?php echo $dnsname;?></td>
 						</tr>
 					</tbody>
 				</table>

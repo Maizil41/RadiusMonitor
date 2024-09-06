@@ -129,6 +129,12 @@ require './auth.php';
 <h3 class="mb-0">List Batch</h3>
 </div> <!--end::Row-->
 </div> <!--end::Container-->
+<div id="overlay" class="overlay"></div>
+<div id="confirmPopup" class="confirm-popup">
+    <p id="confirmMessage"></p>
+    <button id="confirmYes">Yes</button>
+    <button id="confirmNo" class="cancel">No</button>
+</div>
 <div class="col-sm-12">
 <div class="panel panel-hovered mb20 panel-primary">
     <div class="panel-heading">List All Batch</div>
@@ -247,8 +253,9 @@ if ($result->num_rows > 0) {
         echo "<td><center>$creationdate</center></td>";
         echo "<td><center>$creationby</center></td>";
         echo "<td><center>
-                <form action='list_batch.php' method='post' onsubmit='return confirm(\"Apakah Anda yakin ingin menghapus batch $batch_name ?\");'>
+                <form data-confirm action='list_batch.php' method='post'>
                     <input type='hidden' name='id' value='$batch_id'>
+                    <input type='hidden' name='bh_name' value='$batch_name'>
                     <input type='hidden' name='action' value='delete'>
                     <button type='submit' class='btn btn-danger btn-sm'><i class='fa6-solid--trash-can'></i></button>
                 <select class='btn btn-warning' id='selectPrinter$batch_id'>
@@ -320,6 +327,47 @@ function printTicket(batchId, planName, accountsStr) {
         </footer> <!--end::Footer-->
     </div> <!--end::App Wrapper--> <!--begin::Script--> <!--begin::Third Party Plugin(OverlayScrollbars)-->
 <script src="../../dist/js/adminlte.js"></script> <!--end::Required Plugin(AdminLTE)--><!--begin::OverlayScrollbars Configure-->
+
+<script>
+let formToSubmit = null;
+let actionUrl = '';
+
+function showConfirmPopup(message, form) {
+    document.getElementById('confirmMessage').innerText = message;
+    document.getElementById('overlay').classList.add('show');
+    document.getElementById('confirmPopup').classList.add('show');
+    formToSubmit = form; // Simpan formulir yang akan dikirim
+}
+
+function closeConfirmPopup(confirmed) {
+    document.getElementById('overlay').classList.remove('show');
+    document.getElementById('confirmPopup').classList.remove('show');
+    if (confirmed) {
+        if (formToSubmit) {
+            formToSubmit.submit(); // Kirim formulir setelah konfirmasi
+        }
+    }
+}
+
+document.getElementById('confirmYes').onclick = function() {
+    closeConfirmPopup(true);
+};
+
+document.getElementById('confirmNo').onclick = function() {
+    closeConfirmPopup(false);
+};
+
+// Menangani event submit pada formulir
+document.querySelectorAll('form[data-confirm]').forEach(form => {
+    form.onsubmit = function(event) {
+        event.preventDefault(); // Cegah pengiriman formulir standar
+        showConfirmPopup(
+            `Apakah Anda yakin ingin menghapus batch ${form.querySelector('input[name="bh_name"]').value}?`,
+            form
+        );
+    };
+});
+</script>
 
 <?php
 try {

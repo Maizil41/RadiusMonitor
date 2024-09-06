@@ -129,6 +129,12 @@ require './auth.php';
 <h3 class="mb-0">List Plan</h3>
 </div> <!--end::Row-->
 </div> <!--end::Container-->
+<div id="overlay" class="overlay"></div>
+<div id="confirmPopup" class="confirm-popup">
+    <p id="confirmMessage"></p>
+    <button id="confirmYes">Yes</button>
+    <button id="confirmNo" class="cancel">No</button>
+</div>
 <?php
 include("data/db.php");
 
@@ -222,16 +228,15 @@ if ($result->num_rows > 0) {
         <td><center>$shared</td>";
 
         echo "<td><center>
-                <form action='list_plan.php' method='post' onsubmit='return confirm(\"Apakah Anda yakin ingin menghapus plan $plan_names ?\");'>
-                    <input type='hidden' name='id' value='$plan_id'>
-                    <input type='hidden' name='plan_name' value='$plan_names'>
-                    <input type='hidden' name='action' value='delete'>
-                    <a href='edit_plan.php?id=$plan_id' class='btn btn-warning btn-sm'><i class='tabler--edit'></i></a>
-                    <button type='submit' class='btn btn-danger btn-sm'><i class='fa6-solid--trash-can'></i></button>
-                </form>
+            <form data-confirm action='list_plan.php' method='post'>
+                <input type='hidden' name='id' value='$plan_id'>
+                <input type='hidden' name='plan_name' value='$plan_names'>
+                <input type='hidden' name='action' value='delete'>
+                <a href='edit_plan.php?id=$plan_id' class='btn btn-warning btn-sm'><i class='tabler--edit'></i></a>
+                <button type='submit' class='btn btn-danger btn-sm'><i class='fa6-solid--trash-can'></i></button>
+            </form>
             </td>
         </tr>";
-
     }
 } else {
     echo "<tr><td colspan='7'><center>Tidak ada data</center></td></tr>";
@@ -271,6 +276,46 @@ Radius Monitor by
 </footer> <!--end::Footer-->
 </div> <!--end::App Wrapper--> <!--begin::Script--> <!--begin::Third Party Plugin(OverlayScrollbars)-->
 <script src="../../dist/js/adminlte.js"></script> <!--end::Required Plugin(AdminLTE)--><!--begin::OverlayScrollbars Configure-->
+<script>
+let formToSubmit = null;
+let actionUrl = '';
+
+function showConfirmPopup(message, form) {
+    document.getElementById('confirmMessage').innerText = message;
+    document.getElementById('overlay').classList.add('show');
+    document.getElementById('confirmPopup').classList.add('show');
+    formToSubmit = form; // Simpan formulir yang akan dikirim
+}
+
+function closeConfirmPopup(confirmed) {
+    document.getElementById('overlay').classList.remove('show');
+    document.getElementById('confirmPopup').classList.remove('show');
+    if (confirmed) {
+        if (formToSubmit) {
+            formToSubmit.submit(); // Kirim formulir setelah konfirmasi
+        }
+    }
+}
+
+document.getElementById('confirmYes').onclick = function() {
+    closeConfirmPopup(true);
+};
+
+document.getElementById('confirmNo').onclick = function() {
+    closeConfirmPopup(false);
+};
+
+// Menangani event submit pada formulir
+document.querySelectorAll('form[data-confirm]').forEach(form => {
+    form.onsubmit = function(event) {
+        event.preventDefault(); // Cegah pengiriman formulir standar
+        showConfirmPopup(
+            `Apakah Anda yakin ingin menghapus plan ${form.querySelector('input[name="plan_name"]').value}?`,
+            form
+        );
+    };
+});
+</script>
 <?php
 function toxbyte($size) {
     if (empty($size)) {
@@ -352,15 +397,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['id']) && isset($_POST
             if ($stmt_billing->rowCount() > 0 || $stmt_reply->rowCount() > 0 || $stmt_check->rowCount() > 0) {
                 echo "<script>window.location.href = 'list_plan.php';</script>";
             } else {
-                echo "<script>alert('No records found with the provided ID'); window.location.href = 'list_plan.php';</script>";
+                echo "<script>window.location.href = 'list_plan.php?error=No records found with the provided ID';</script>";
             }
         } catch (PDOException $e) {
             // Rollback transaksi jika terjadi kesalahan
             $pdo->rollBack();
-            echo "<script>alert('Error deleting plan: " . $e->getMessage() . "'); window.location.href = 'list_plan.php';</script>";
+            echo "<script>window.location.href = 'list_plan.php?error=Error: " . addslashes($e->getMessage()) . "';</script>";
         }
     } else {
-        echo "<script>alert('Failed to connect to the database.'); window.location.href = 'list_plan.php';</script>";
+        echo "<script>window.location.href = 'list_plan.php?error=Failed to connect to the database.';</script>";
     }
     exit();
 }

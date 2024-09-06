@@ -24,7 +24,6 @@ require './auth.php';
     <link rel="stylesheet" href="../../dist/css/logo.css">
     <link rel="stylesheet" href="../../dist/css/bootstrap.css">
     <link rel="icon" href="../../dist/assets/img/favicon.svg" />
-    <script>function disconnect(username){if(confirm("Apakah Anda yakin ingin disconnect pengguna "+username+" ?")){window.location.href="online_user.php?id="+username}}</script>
 </head> <!--end::Head--> <!--begin::Body-->
 
 <body class="layout-fixed sidebar-expand-lg bg-body-tertiary"> <!--begin::App Wrapper-->
@@ -130,6 +129,12 @@ require './auth.php';
 <h3 class="mb-0">Online User</h3>
 </div> <!--end::Row-->
 </div> <!--end::Container-->
+<div id="overlay" class="overlay"></div>
+<div id="confirmPopup" class="confirm-popup">
+    <p id="confirmMessage"></p>
+    <button id="confirmYes">Yes</button>
+    <button id="confirmNo" class="cancel">No</button>
+</div>
 <?php
         include("data/db.php");
 
@@ -283,7 +288,11 @@ if ($result->num_rows > 0) {
         <td><center>$download</td>
         <td><center>$traffic</td>
         <td>
-            <center><button class='btn btn-danger btn-xs' onclick=\"disconnect('$username')\"><span class='line-md--alert-loop glyphicon-alert' aria-hidden='true'></span>&nbsp;Disconnect</button>
+            <center>
+                <button class='btn btn-danger btn-xs' onclick=\"deleteUser('$username')\">
+                    <span class='line-md--alert-loop glyphicon-alert' aria-hidden='true'></span>&nbsp;Disconnect
+                </button>
+            </center>
         </td>
     </tr>";
     }
@@ -326,6 +335,39 @@ Radius Monitor by
 </footer> <!--end::Footer-->
 </div> <!--end::App Wrapper--> <!--begin::Script--> <!--begin::Third Party Plugin(OverlayScrollbars)-->
 <script src="../../dist/js/adminlte.js"></script> <!--end::Required Plugin(AdminLTE)--><!--begin::OverlayScrollbars Configure-->
+<script>
+let deleteUserUsername = '';
 
+function showConfirmPopup(message, username) {
+    document.getElementById('confirmMessage').innerText = message;
+    document.getElementById('overlay').classList.add('show');
+    document.getElementById('confirmPopup').classList.add('show');
+    deleteUserUsername = username; // Simpan username yang akan dihapus
+}
+
+function closeConfirmPopup(confirmed) {
+    document.getElementById('overlay').classList.remove('show');
+    document.getElementById('confirmPopup').classList.remove('show');
+    if (confirmed) {
+        if (deleteUserUsername) {
+            // Redirect ke halaman penghapusan dengan username yang disimpan
+            window.location.href = `online_user.php?id=${encodeURIComponent(deleteUserUsername)}`;
+        }
+    }
+}
+
+document.getElementById('confirmYes').onclick = function() {
+    closeConfirmPopup(true);
+};
+
+document.getElementById('confirmNo').onclick = function() {
+    closeConfirmPopup(false);
+};
+
+// Fungsi untuk memanggil popup konfirmasi
+function deleteUser(username) {
+    showConfirmPopup(`Apakah Anda yakin ingin memutuskan pengguna ${username}?`, username);
+}
+</script>
 </body>
 </html>

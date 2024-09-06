@@ -128,6 +128,12 @@ require './auth.php';
 <h3 class="mb-0">List Bandwidth</h3>
 </div> <!--end::Row-->
 </div> <!--end::Container-->
+<div id="overlay" class="overlay"></div>
+<div id="confirmPopup" class="confirm-popup">
+    <p id="confirmMessage"></p>
+    <button id="confirmYes">Yes</button>
+    <button id="confirmNo" class="cancel">No</button>
+</div>
 <?php
 include("data/db.php");
 
@@ -181,14 +187,13 @@ if ($result->num_rows > 0) {
         echo "<td><center>$rate_up</td>";
 
         echo "<td><center>
-                <form action='list_bandwidth.php' method='post' onsubmit='return confirm(\"Apakah Anda yakin ingin menghapus bandwidth $bw_name ?\");'>
-                    <input type='hidden' name='bw_name' value='$bw_name'>
-                    <input type='hidden' name='action' value='delete'>
-                    <button type='submit' class='btn btn-danger btn-sm'><i class='fa6-solid--trash-can'></i></button>
-                </form>
+            <form data-confirm action='list_bandwidth.php' method='post'>
+                <input type='hidden' name='bw_name' value='$bw_name'>
+                <input type='hidden' name='action' value='delete'>
+                <button type='submit' class='btn btn-danger btn-sm'><i class='fa6-solid--trash-can'></i></button>
+            </form>
             </td>
         </tr>";
-
     }
 } else {
     echo "<tr><td colspan='6'><center>Tidak ada data</center></td></tr>";
@@ -228,6 +233,46 @@ Radius Monitor by
 </footer> <!--end::Footer-->
 </div> <!--end::App Wrapper--> <!--begin::Script--> <!--begin::Third Party Plugin(OverlayScrollbars)-->
 <script src="../../dist/js/adminlte.js"></script> <!--end::Required Plugin(AdminLTE)--><!--begin::OverlayScrollbars Configure-->
+<script>
+let formToSubmit = null;
+let actionUrl = '';
+
+function showConfirmPopup(message, form) {
+    document.getElementById('confirmMessage').innerText = message;
+    document.getElementById('overlay').classList.add('show');
+    document.getElementById('confirmPopup').classList.add('show');
+    formToSubmit = form; // Simpan formulir yang akan dikirim
+}
+
+function closeConfirmPopup(confirmed) {
+    document.getElementById('overlay').classList.remove('show');
+    document.getElementById('confirmPopup').classList.remove('show');
+    if (confirmed) {
+        if (formToSubmit) {
+            formToSubmit.submit(); // Kirim formulir setelah konfirmasi
+        }
+    }
+}
+
+document.getElementById('confirmYes').onclick = function() {
+    closeConfirmPopup(true);
+};
+
+document.getElementById('confirmNo').onclick = function() {
+    closeConfirmPopup(false);
+};
+
+// Menangani event submit pada formulir
+document.querySelectorAll('form[data-confirm]').forEach(form => {
+    form.onsubmit = function(event) {
+        event.preventDefault(); // Cegah pengiriman formulir standar
+        showConfirmPopup(
+            `Apakah Anda yakin ingin menghapus bandwidth ${form.querySelector('input[name="bw_name"]').value}?`,
+            form
+        );
+    };
+});
+</script>
 <?php
 function format_bandwidth($bps) {
     if ($bps >= 1048576) {
@@ -278,15 +323,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['bw_name']) && isset($
             if ($stmt_billing->rowCount() > 0 || $stmt_reply->rowCount() > 0 || $stmt_check->rowCount() > 0) {
                 echo "<script>window.location.href = 'list_bandwidth.php';</script>";
             } else {
-                echo "<script>alert('No records found with the provided ID'); window.location.href = 'list_bandwidth.php';</script>";
+                echo "<script>window.location.href = 'list_bandwidth.php?error=No records found with the provided ID';</script>";
             }
         } catch (PDOException $e) {
             // Rollback transaksi jika terjadi kesalahan
             $pdo->rollBack();
-            echo "<script>alert('Error deleting plan: " . $e->getMessage() . "'); window.location.href = 'list_bandwidth.php';</script>";
+            echo "<script>window.location.href = 'list_bandwidth.php?error=Error: " . addslashes($e->getMessage()) . "';</script>";
         }
     } else {
-        echo "<script>alert('Failed to connect to the database.'); window.location.href = 'list_bandwidth.php';</script>";
+        echo "<script>window.location.href = 'list_bandwidth.php?error=Failed to connect to the database.';</script>";
     }
     exit();
 }

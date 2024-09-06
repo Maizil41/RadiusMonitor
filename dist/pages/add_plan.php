@@ -129,7 +129,11 @@ require './auth.php';
 <h3 class="mb-0">Add Plan</h3>
 </div> <!--end::Row-->
 </div> <!--end::Container-->
-
+<div id="overlay" class="overlay"></div>
+<div id="errorPopup" class="confirm-popup">
+    <center><p id="popupMessage"></p>
+    <center><button onclick="closePopup()">OK</button>
+</div>
 <div class="col-sm-12 col-md-12">
     <div class="panel panel-primary panel-hovered panel-stacked mb30">
         <div class="panel-heading">Add New Plan</div>
@@ -260,6 +264,28 @@ Radius Monitor by
 </footer> <!--end::Footer-->
 </div> <!--end::App Wrapper--> <!--begin::Script--> <!--begin::Third Party Plugin(OverlayScrollbars)-->
 <script src="../../dist/js/adminlte.js"></script> <!--end::Required Plugin(AdminLTE)--><!--begin::OverlayScrollbars Configure-->
+    <script>
+        function showPopup(message) {
+            document.getElementById('popupMessage').innerText = message;
+            document.getElementById('overlay').classList.add('show');
+            document.getElementById('errorPopup').classList.add('show');
+        }
+
+        function closePopup() {
+            document.getElementById('overlay').classList.remove('show');
+            document.getElementById('errorPopup').classList.remove('show');
+            window.location.href = 'add_plan.php';
+        }
+
+        // Menampilkan popup berdasarkan parameter URL
+        window.onload = function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.has('error')) {
+                const errorMessage = urlParams.get('error');
+                showPopup(errorMessage);
+            }
+        }
+    </script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     fetch('api/bandwidth.php')
@@ -501,7 +527,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['addbillplans']) && $_
         $count = $stmt->fetchColumn();
 
         if ($count > 0) {
-            echo "<script>alert('Nama plan sudah ada di database.'); window.location.href = 'add_plan.php';</script>";
+            echo "<script>window.location.href = 'add_plan.php?error=Nama plan sudah terdaftar di database.';</script>";
             exit();
         }
 
@@ -649,7 +675,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['addbillplans']) && $_
     } catch (Exception $e) {
         // Rollback transaksi jika terjadi kesalahan
         $pdo->rollBack();
-        echo "<script>alert('Error: " . $e->getMessage() . "'); window.location.href = 'list_plan.php';</script>";
+        echo "<script>window.location.href = 'list_plan.php?error=Error: " . addslashes($e->getMessage()) . "';</script>";
         exit();
     }
 }

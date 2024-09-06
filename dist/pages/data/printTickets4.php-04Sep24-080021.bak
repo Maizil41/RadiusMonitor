@@ -189,7 +189,7 @@ function printTicketsHTMLTable($accounts, $ticketCost, $ticketTime, $ticketQuota
 	<tbody>
 		<tr>
 			<td style="text-align: center; font-size: 14px; border-bottom: 1px black solid;">
-			<center><span style="font-size: 25px;font-weight: bold;">𝗠𝗨𝗧𝗜𝗔𝗥𝗔.<span style="color:<?php echo $color; ?>;">𝗡𝗘𝗧</center>
+			<center><span style="font-size: 20px;font-weight: bold;">𝗠𝗨𝗧𝗜𝗔𝗥𝗔.<span style="color:<?php echo $color; ?>;">𝗡𝗘𝗧</center>
 			<span><?php echo $timestamp ?></span>
 			</td>
 		</tr>

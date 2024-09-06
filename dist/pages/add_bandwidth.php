@@ -129,7 +129,11 @@ require './auth.php';
 <h3 class="mb-0">Add Bandwidth</h3>
 </div> <!--end::Row-->
 </div> <!--end::Container-->
-
+<div id="overlay" class="overlay"></div>
+<div id="errorPopup" class="confirm-popup">
+    <center><p id="popupMessage"></p>
+    <center><button onclick="closePopup()">OK</button>
+</div>
 <div class="col-sm-12 col-md-12">
 	<div class="panel panel-primary panel-hovered panel-stacked mb30">
 		<div class="panel-heading">Add New Bandwidth</div>
@@ -188,6 +192,28 @@ Radius Monitor by
 </footer> <!--end::Footer-->
 </div> <!--end::App Wrapper--> <!--begin::Script--> <!--begin::Third Party Plugin(OverlayScrollbars)-->
 <script src="../../dist/js/adminlte.js"></script> <!--end::Required Plugin(AdminLTE)--><!--begin::OverlayScrollbars Configure-->
+<script>
+    function showPopup(message) {
+        document.getElementById('popupMessage').innerText = message;
+        document.getElementById('overlay').classList.add('show');
+        document.getElementById('errorPopup').classList.add('show');
+    }
+
+    function closePopup() {
+        document.getElementById('overlay').classList.remove('show');
+        document.getElementById('errorPopup').classList.remove('show');
+        window.location.href = 'add_bandwidth.php';
+    }
+
+    // Menampilkan popup berdasarkan parameter URL
+    window.onload = function() {
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.has('error')) {
+            const errorMessage = urlParams.get('error');
+            showPopup(errorMessage);
+        }
+    }
+</script>
 <?php
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Ambil data dari formulir dengan validasi
@@ -244,7 +270,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $stmt->close();
 
         if ($count > 0) {
-            echo "<script>alert('Nama bandwidth sudah ada didatabase.'); window.location.href = 'add_bandwidth.php';</script>";
+            echo "<script>window.location.href = 'add_bandwidth.php?error=Nama bandwidth sudah ada didatabase.';</script>";
             $conn->close();
             exit();
         }

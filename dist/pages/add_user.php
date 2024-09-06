@@ -129,6 +129,11 @@ require './auth.php';
 <h3 class="mb-0">Add User</h3>
 </div> <!--end::Row-->
 </div> <!--end::Container-->
+<div id="overlay" class="overlay"></div>
+<div id="errorPopup" class="confirm-popup">
+    <center><p id="popupMessage"></p>
+    <center><button onclick="closePopup()">OK</button>
+</div>
 <div class="col-sm-12 col-md-12">
     <div class="panel panel-primary panel-hovered panel-stacked mb30">
         <div class="panel-heading">Add New User</div>
@@ -187,6 +192,28 @@ require './auth.php';
             .catch(error => console.error('Error:', error));
     });
 </script>
+    <script>
+        function showPopup(message) {
+            document.getElementById('popupMessage').innerText = message;
+            document.getElementById('overlay').classList.add('show');
+            document.getElementById('errorPopup').classList.add('show');
+        }
+
+        function closePopup() {
+            document.getElementById('overlay').classList.remove('show');
+            document.getElementById('errorPopup').classList.remove('show');
+            window.location.href = 'add_user.php';
+        }
+
+        // Menampilkan popup berdasarkan parameter URL
+        window.onload = function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.has('error')) {
+                const errorMessage = urlParams.get('error');
+                showPopup(errorMessage);
+            }
+        }
+    </script>
 <?php
 // Konfigurasi database
 $host = "127.0.0.1"; // Ganti dengan host database Anda
@@ -219,11 +246,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $check_stmt->close();
 
         if ($count > 0) {
-            // Jika username sudah terdaftar
-            echo "<script>alert('Username sudah terdaftar.'); window.location.href = 'add_user.php';</script>";
+            echo "<script>window.location.href = 'add_user.php?error=Username sudah terdaftar di database.';</script>";
         } else {
             try {
-                // Memulai transaksi
+                
                 $conn->begin_transaction();
 
                 // Menjalankan query berdasarkan tombol yang diklik
@@ -301,23 +327,20 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     $stmt->execute();
                     $stmt->close();
 
-                    // Komit transaksi
                     $conn->commit();
 
                     echo "<script>window.location.href = 'print_user.php';</script>";
                 }
 
             } catch (Exception $e) {
-                // Rollback transaksi jika terjadi kesalahan
                 $conn->rollback();
-                echo "<script>alert('Error: " . $e->getMessage() . "'); window.location.href = 'add_user.php';</script>";
+                echo "<script>window.location.href = 'add_user.php?error=Error: " . addslashes($e->getMessage()) . "';</script>";
             }
         }
     } else {
-        echo "<script>alert('Semua data harus diisi.'); window.location.href = 'add_user.php';</script>";
+        echo "<script>window.location.href = 'add_user.php?error=Semua data harus diisi.';</script>";
     }
 
-    // Menutup koneksi
     $conn->close();
 }
 ?>

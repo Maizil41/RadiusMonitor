@@ -24,7 +24,6 @@ require './auth.php';
     <link rel="stylesheet" href="../../dist/css/logo.css">
     <link rel="stylesheet" href="../../dist/css/bootstrap.css">
     <link rel="icon" href="../../dist/assets/img/favicon.svg" />
-    <script>function deleteUser(username){if(confirm("Apakah Anda yakin ingin menendang pengguna "+username+" dari database ?")){window.location.href="index.php?id="+username}}</script>
 </head> <!--end::Head--> <!--begin::Body-->
 
 <body class="layout-fixed sidebar-expand-lg bg-body-tertiary"> <!--begin::App Wrapper-->
@@ -160,7 +159,12 @@ require './auth.php';
 <h3 class="mb-0">Dashboard</h3>
 </div> <!--end::Row-->
 </div> <!--end::Container-->
-
+<div id="overlay" class="overlay"></div>
+<div id="confirmPopup" class="confirm-popup">
+    <p id="confirmMessage"></p>
+    <button id="confirmYes">Yes</button>
+    <button id="confirmNo" class="cancel">No</button>
+</div>
 <?php
 include ("data/db.php");
 include ("data/data.php");
@@ -403,6 +407,40 @@ echo "
     <script src="./plugins/daily-user-chart.js" defer></script> <!-- Icons library -->
     <script src="plugins/feather.min.js"></script> <!-- Custom scripts -->
     <script src="js/script.js"></script>
+<script>
+let deleteUserUsername = '';
+
+function showConfirmPopup(message, username) {
+    document.getElementById('confirmMessage').innerText = message;
+    document.getElementById('overlay').classList.add('show');
+    document.getElementById('confirmPopup').classList.add('show');
+    deleteUserUsername = username; // Simpan username yang akan dihapus
+}
+
+function closeConfirmPopup(confirmed) {
+    document.getElementById('overlay').classList.remove('show');
+    document.getElementById('confirmPopup').classList.remove('show');
+    if (confirmed) {
+        if (deleteUserUsername) {
+            // Redirect ke halaman penghapusan dengan username yang disimpan
+            window.location.href = `index.php?id=${encodeURIComponent(deleteUserUsername)}`;
+        }
+    }
+}
+
+document.getElementById('confirmYes').onclick = function() {
+    closeConfirmPopup(true);
+};
+
+document.getElementById('confirmNo').onclick = function() {
+    closeConfirmPopup(false);
+};
+
+// Fungsi untuk memanggil popup konfirmasi
+function deleteUser(username) {
+    showConfirmPopup(`Apakah Anda yakin ingin memutuskan pengguna ${username}?`, username);
+}
+</script>
 </body><!--end::Body-->
 
 </html>
