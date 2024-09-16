@@ -6,7 +6,6 @@
   <div><img src="https://img.shields.io/badge/Version-2.1-blue?style=for-the-badge" alt="Version Badge"></div></br>
   <a target="_blank" href="https://github.com/Maizil41/RadiusMonitor/releases"><img src="https://img.shields.io/github/downloads/Maizil41/RadiusMonitor/total?    label=Total%20Download&labelColor=blue&style=for-the-badge"></a>
    <a target="_blank" href="https://t.me/mutiara_wrt"><img src="https://img.shields.io/badge/Telegram-Join%20Us-blue?style=for-the-badge&logo=telegram" alt="Join us on Telegram"></a>
-
 </div>
 
 Packages Needed
