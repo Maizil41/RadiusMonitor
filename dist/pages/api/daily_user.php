@@ -13,19 +13,9 @@
 header('Content-Type: application/json');
 header('Access-Control-Allow-Origin: *');
 
-// Konfigurasi koneksi database
-$host = '127.0.0.1';
-$dbname = 'radius'; // Ganti dengan nama database Anda
-$user = 'radius'; // Ganti dengan username database Anda
-$pass = 'radius'; // Ganti dengan password database Anda
+require '../data/pdo_db.php';
 
-try {
-    $pdo = new PDO("mysql:host=$host;dbname=$dbname", $user, $pass);
-    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-} catch (PDOException $e) {
-    echo json_encode(['error' => $e->getMessage()]);
-    exit();
-}
+$pdo = get_db_connection();
 
 $query = "
     SELECT 

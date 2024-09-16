@@ -82,6 +82,21 @@ require './auth.php';
                                     </a> </li>
                             </ul>
                         </li>
+                        <li class="nav-item"> <a href="#" class="nav-link"> <i class="nav-icon bi payment"></i>
+                                <p>
+                                    Payment
+                                    <span class="nav-badge badge text-bg-secondary me-3"></span> <i class="nav-arrow bi iconoir--nav-arrow-right"></i>
+                                </p>
+                            </a>
+                            <ul class="nav nav-treeview">
+                                <li class="nav-item"> <a href="./billing/admin.php" class="nav-link"> <i class="nav-icon bi payment-clock"></i>
+                                        <p>Request</p>
+                                    </a> </li>
+                                <li class="nav-item"> <a href="./billing/balance.php" class="nav-link"> <i class="nav-icon bi wallet"></i>
+                                        <p>Balance</p>
+                                    </a> </li>
+                            </ul>
+                        </li>
                         <li class="nav-item"> <a href="#" class="nav-link"> <i class="nav-icon bi mdi--printer"></i>
                                 <p>
                                     Print
@@ -94,6 +109,9 @@ require './auth.php';
                                     </a> </li>
                                 <li class="nav-item"> <a href="./list_batch.php" class="nav-link"> <i class="nav-icon bi material-symbols--group-add"></i>
                                         <p>Batch</p>
+                                    </a> </li>
+                                <li class="nav-item"> <a href="./print_setting.php" class="nav-link"> <i class="nav-icon bi print-settings"></i>
+                                        <p>Setting</p>
                                     </a> </li>
                             </ul>
                         </li>
@@ -130,7 +148,7 @@ require './auth.php';
 </div> <!--end::Row-->
 </div> <!--end::Container-->
 <?php
-include("data/db.php");
+require './data/mysqli_db.php';
 
 if (!isset($_GET['id'])) {
     echo "<script>alert('Plan ID is missing!'); window.location.href = 'list_plan.php';</script>";

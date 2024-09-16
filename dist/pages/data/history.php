@@ -8,8 +8,7 @@
 * © 2024 Mutiara-Net By @Maizil
 *******************************************************************************************************************
 */
-?>
-<?php
+
 $sql = "SELECT username, pass, reply, authdate FROM radpostauth ORDER BY id DESC LIMIT 7";
 $result = $conn->query($sql);
 

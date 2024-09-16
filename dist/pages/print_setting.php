@@ -15,7 +15,7 @@ require './auth.php';
 
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-    <title>RadiusMonitor | Radtest</title><!--begin::Primary Meta Tags-->
+    <title>RadiusMonitor | Print Settings</title><!--begin::Primary Meta Tags-->
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="author" content="ColorlibHQ">
     <meta name="description" content="AdminLTE is a Free Bootstrap 5 Admin Dashboard, 30 example pages using Vanilla JS.">
@@ -24,7 +24,14 @@ require './auth.php';
     <link rel="stylesheet" href="../../dist/css/logo.css">
     <link rel="stylesheet" href="../../dist/css/bootstrap.css">
     <link rel="icon" href="../../dist/assets/img/favicon.svg" />
-    <script>function deleteUser(username){if(confirm("Apakah Anda yakin ingin menghapus pengguna "+username+" ?")){window.location.href="list_user.php?id="+username}}</script>
+    <style>
+    .logo-box {
+    border: 2px solid #000;
+    padding: 10px;
+    width: 180px;
+    height: 70px;
+    }
+    </style>
 </head> <!--end::Head--> <!--begin::Body-->
 
 <body class="layout-fixed sidebar-expand-lg bg-body-tertiary"> <!--begin::App Wrapper-->
@@ -98,7 +105,7 @@ require './auth.php';
                                     </a> </li>
                             </ul>
                         </li>
-                        <li class="nav-item"> <a href="#" class="nav-link"> <i class="nav-icon bi mdi--printer"></i>
+                        <li class="nav-item"> <a href="#" class="nav-link active"> <i class="nav-icon bi mdi--printer"></i>
                                 <p>
                                     Print
                                     <i class="nav-arrow bi iconoir--nav-arrow-right"></i>
@@ -111,12 +118,12 @@ require './auth.php';
                                 <li class="nav-item"> <a href="./list_batch.php" class="nav-link"> <i class="nav-icon bi material-symbols--group-add"></i>
                                         <p>Batch</p>
                                     </a> </li>
-                                <li class="nav-item"> <a href="./print_setting.php" class="nav-link"> <i class="nav-icon bi print-settings"></i>
+                                <li class="nav-item"> <a href="./print_setting.php" class="nav-link active"> <i class="nav-icon bi print-settings"></i>
                                         <p>Setting</p>
                                     </a> </li>
                             </ul>
                         </li>
-                        <li class="nav-item"> <a href="#" class="nav-link active"> <i class="nav-icon bi mdi--gear"></i>
+                        <li class="nav-item"> <a href="#" class="nav-link"> <i class="nav-icon bi mdi--gear"></i>
                                 <p>
                                     System
                                     <i class="nav-arrow bi iconoir--nav-arrow-right"></i>
@@ -129,7 +136,7 @@ require './auth.php';
                                 <li class="nav-item"> <a href="./sys_db.php" class="nav-link"> <i class="nav-icon bi material-symbols--database"></i>
                                         <p>Database</p>
                                     </a> </li>
-                                <li class="nav-item"> <a href="./client_tester.php" class="nav-link active"> <i class="nav-icon bi ep--connection"></i>
+                                <li class="nav-item"> <a href="./client_tester.php" class="nav-link"> <i class="nav-icon bi ep--connection"></i>
                                         <p>Client Tester</p>
                                     </a> </li>
                                 <li class="nav-item"> <a href="./php_admin.php" class="nav-link"> <i class="nav-icon bi phpmyadmin"></i>
@@ -145,93 +152,91 @@ require './auth.php';
     <div class="app-content-header"> <!--begin::Container-->
 <section class="content">
 <div class="container-fluid"> <!--begin::Row-->
-<h3 class="mb-0">Client Tester</h3>
+<h3 class="mb-0">Print Settings</h3>
 </div> <!--end::Row-->
 </div> <!--end::Container-->
-<?php
-// Definisikan variabel dan set ke nilai kosong
-$username = $password = $address = $port = $secret = "";
-$output = "";
 
-// Proses form saat disubmit
-if ($_SERVER["REQUEST_METHOD"] === "POST") {
-    // Validasi input
-    $username = isset($_POST['username']) ? trim($_POST['username']) : '';
-    $password = isset($_POST['password']) ? trim($_POST['password']) : '';
-    $address = isset($_POST['address']) ? trim($_POST['address']) : '';
-    $port = isset($_POST['port']) ? trim($_POST['port']) : '';
-    $secret = isset($_POST['secret']) ? trim($_POST['secret']) : '';
-
-    // Jalankan perintah radtest jika semua input valid
-    if (!empty($username) && !empty($password) && !empty($address) && !empty($port) && !empty($secret)) {
-        // Escape command to prevent shell injection
-        $command = escapeshellcmd("radtest $username $password $address $port $secret");
-        $output = shell_exec($command);
-    } else {
-
-    }
-}
-?>
-<form class="form-horizontal" method="post" role="form" action="">
+<form class="form-horizontal" method="post" action="submit_config.php" enctype="multipart/form-data" role="form">
     <div class="col-sm-12 col-md-12">
         <div class="panel panel-primary panel-hovered panel-stacked mb30">
-            <div class="panel-heading">Test User Connectivity</div>
+            <div class="panel-heading">Configure PrintTicket</div>
             <div class="panel-body">
                 <div class="form-group">
-                    <label class="col-md-2 control-label" for="username">Username</label>
+                    <label class="col-md-2 control-label" for="hsname">Hotspot Name</label>
+                    <div class="col-md-4">
+                        <input type="text" id="hsname1" name="hsname1" class="form-control" required>
+                    </div>
+                    <div class="col-md-2">
+                        <input type="text" id="hsname2" name="hsname2" class="form-control" required>
+                    </div>
+                </div>
+                    <div class="form-group">
+                        <label class="col-md-2 control-label">Hotspot Logo</label>
+                        <div class="col-md-6">
+                            <input type="file" class="form-control" id="hslogo" name="hslogo" accept=".png,.jpg,.jpeg">
+                        </div>
+                        <span class="help-block col-md-4">
+                            <center><a href="./logo/logo.png" target="_blank"><img src="./logo/logo.png" height="48" class="logo-box" alt="logo"></a></center>
+                        </span>
+                    </div>
+                <div class="form-group">
+                    <label class="col-md-2 control-label" for="hsip">Hotspot IP</label>
                     <div class="col-md-6">
-                        <input type="text" id="username" name="username" value="<?php echo htmlspecialchars($username); ?>" placeholder="Username" class="form-control" required>
+                        <input type="text" id="hsip" name="hsip" placeholder="10.10.10.1" class="form-control" required>
+                        <caption>This should contain the Chilli IP, Default 10.10.10.1</caption>
                     </div>
                 </div>
                 <div class="form-group">
-                    <label class="col-md-2 control-label" for="password">Password</label>
+                    <label class="col-md-2 control-label" for="hsdomain">Hotspot Domain</label>
                     <div class="col-md-6">
-                        <input type="text" id="password" name="password" value="<?php echo htmlspecialchars($password); ?>" placeholder="Password" class="form-control" required>
+                        <input type="text" id="hsdomain" name="hsdomain" placeholder="mutiara.net" class="form-control" required>
+                        <caption>This domain must be registered in OpenWrt</caption>
                     </div>
                 </div>
                 <div class="form-group">
-                    <label class="col-md-2 control-label" for="address">Nas IP Address</label>
+                    <label class="col-md-2 control-label" for="hscsn">CS Number</label>
                     <div class="col-md-6">
-                        <input type="text" id="address" name="address" value="<?php echo htmlspecialchars($address); ?>" placeholder="127.0.0.1" class="form-control" required>
+                        <input type="text" id="hscsn" name="hscsn" placeholder="0812-XXXX-XXXX" class="form-control" required>
+                        <caption>Write your admin number, sample: 0853-7268-7484</caption>
                     </div>
                 </div>
                 <div class="form-group">
-                    <label class="col-md-2 control-label" for="port">Nas Port</label>
+                    <label class="col-md-2 control-label" for="hsqrmode">Qr Code Option</label>
                     <div class="col-md-6">
-                        <input type="text" id="port" name="port" value="<?php echo htmlspecialchars($port); ?>" placeholder="1812" class="form-control" required>
+                        <select id="hsqrmode" name="hsqrmode" class="form-select">
+                            <option value="url">URL with Voucher Code</option>
+                            <option value="code">Voucher Code Only</option>
+                        </select>
                     </div>
                 </div>
                 <div class="form-group">
-                    <label class="col-md-2 control-label" for="secret">Nas Secret</label>
+                    <label class="col-md-2 control-label" for="hsipdomain">Qr Url Option</label>
                     <div class="col-md-6">
-                        <input type="text" id="secret" name="secret" value="<?php echo htmlspecialchars($secret); ?>" placeholder="testing123" class="form-control" required>
+                        <select id="hsipdomain" name="hsipdomain" class="form-select">
+                            <option value="ip">Hotspot IP</option>
+                            <option value="domain">Hotspot Domain</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="col-md-2 control-label" for="logomode">Logo Mode</label>
+                    <div class="col-md-6">
+                        <select id="logomode" name="logomode" class="form-select">
+                            <option value="text">Text</option>
+                            <option value="image">Images</option>
+                        </select>
                     </div>
                 </div>
                 <div class="form-group">
                     <div class="col-lg-offset-2 col-lg-10">
-                        <button class="btn btn-success waves-effect waves-light" type="submit" name="submit" value="Submit">Test User Connection</button>
+                        <button class="btn btn-primary" type="submit" name="save" value="Save">Save Config</button>
                     </div>
                 </div>
             </div>
         </div>
-        <?php if (!empty($output)): ?>
-            <div class="panel panel-primary panel-hovered panel-stacked mb30">
-                <div class="panel-heading">Results</div>
-                <div class="panel-body">
-                    <table class="table table-bordered table-condensed table-striped table_mobile">
-                        <tbody>
-                            <tr>
-                                <td class="logs-container">
-                                    <pre><?php echo htmlspecialchars($output); ?></pre>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        <?php endif; ?>
     </div>
 </form>
+
 </main>
 <footer class="app-footer"> <!--begin::To the end-->
 <div class="float-end d-none d-sm-inline">Themes by <a href="https://adminlte.io" target="_blank" class="text-decoration-none">AdminLTE.io</a></div>
@@ -242,6 +247,25 @@ Radius Monitor by
 </footer> <!--end::Footer-->
 </div> <!--end::App Wrapper--> <!--begin::Script--> <!--begin::Third Party Plugin(OverlayScrollbars)-->
 <script src="../../dist/js/adminlte.js"></script> <!--end::Required Plugin(AdminLTE)--><!--begin::OverlayScrollbars Configure-->
+<script>
+    function loadFormData() {
+        fetch('./data/config_print.json')
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById('hsname1').value = data.hsname1;
+            document.getElementById('hsname2').value = data.hsname2;
+            document.getElementById('hsip').value = data.hsip;
+            document.getElementById('hsdomain').value = data.hsdomain;
+            document.getElementById('hscsn').value = data.hscsn;
+            document.getElementById('hslogo').value = data.hslogo;
+            document.getElementById('hsqrmode').value = data.hsqrmode;
+            document.getElementById('hsipdomain').value = data.hsipdomain;
+            document.getElementById('logomode').value = data.logomode;
+        })
+        .catch(error => console.error('Error loading JSON data:', error));
+    }
 
+    window.onload = loadFormData;
+</script>
 </body>
 </html>

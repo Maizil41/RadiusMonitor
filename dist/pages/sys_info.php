@@ -83,6 +83,21 @@ require './auth.php';
                                     </a> </li>
                             </ul>
                         </li>
+                        <li class="nav-item"> <a href="#" class="nav-link"> <i class="nav-icon bi payment"></i>
+                                <p>
+                                    Payment
+                                    <span class="nav-badge badge text-bg-secondary me-3"></span> <i class="nav-arrow bi iconoir--nav-arrow-right"></i>
+                                </p>
+                            </a>
+                            <ul class="nav nav-treeview">
+                                <li class="nav-item"> <a href="./billing/admin.php" class="nav-link"> <i class="nav-icon bi payment-clock"></i>
+                                        <p>Request</p>
+                                    </a> </li>
+                                <li class="nav-item"> <a href="./billing/balance.php" class="nav-link"> <i class="nav-icon bi wallet"></i>
+                                        <p>Balance</p>
+                                    </a> </li>
+                            </ul>
+                        </li>
                         <li class="nav-item"> <a href="#" class="nav-link"> <i class="nav-icon bi mdi--printer"></i>
                                 <p>
                                     Print
@@ -95,6 +110,9 @@ require './auth.php';
                                     </a> </li>
                                 <li class="nav-item"> <a href="./list_batch.php" class="nav-link"> <i class="nav-icon bi material-symbols--group-add"></i>
                                         <p>Batch</p>
+                                    </a> </li>
+                                <li class="nav-item"> <a href="./print_setting.php" class="nav-link"> <i class="nav-icon bi print-settings"></i>
+                                        <p>Setting</p>
                                     </a> </li>
                             </ul>
                         </li>
@@ -131,26 +149,20 @@ require './auth.php';
 </div> <!--end::Row-->
 </div> <!--end::Container-->
 <?php
-// Function to execute shell commands and return the formatted output
 function execute_command($command) {
     $output = shell_exec($command);
     return trim($output);
 }
 
 function extractUptime($uptimeString) {
-    // Cetak hasil uptime untuk debugging
     error_log("Uptime raw output: $uptimeString");
 
-    // Pisahkan bagian uptime dari bagian load average
     $parts = explode('load average:', $uptimeString);
     if (count($parts) > 1) {
-        // Ambil bagian setelah 'up' dan sebelum 'load average'
         $uptimePart = trim($parts[0]);
         
-        // Hapus waktu saat ini (format jam:menit:detik) dan kata 'up'
         if (preg_match('/^\d{2}:\d{2}:\d{2} up (.+)$/', $uptimePart, $matches)) {
             $uptime = $matches[1];
-            // Hapus koma dari bagian uptime
             $uptime = str_replace(',', '', $uptime);
             return $uptime;
         }
@@ -166,18 +178,16 @@ function getUptime() {
 
 $uptime = getUptime();
 
-// Function to check if a service is running
 function check_service_status($service_name) {
     $status = execute_command("pgrep $service_name");
     return !empty($status) ? 'Running' : 'Not Running';
 }
 
-// Function to get IP info from ipinfo.io using curl
 function get_ip_info() {
     $ch = curl_init();
     curl_setopt($ch, CURLOPT_URL, "https://ipinfo.io/json");
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false); // Disable SSL verification if needed
+    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
     $json = curl_exec($ch);
     curl_close($ch);
 
@@ -188,18 +198,19 @@ function get_ip_info() {
     return $data;
 }
 
-// Ambil informasi IP
 $ip_info = get_ip_info();
 
-// Fallback values jika data tidak tersedia
 $ip = isset($ip_info['ip']) ? $ip_info['ip'] : 'N/A';
+$host = isset($ip_info['hostname']) ? $ip_info['hostname'] : 'N/A';
 $city = isset($ip_info['city']) ? $ip_info['city'] : 'N/A';
 $region = isset($ip_info['region']) ? $ip_info['region'] : 'N/A';
 $country = isset($ip_info['country']) ? $ip_info['country'] : 'N/A';
-$org = isset($ip_info['org']) ? $ip_info['org'] : 'N/A';
+$org_info = isset($ip_info['org']) ? $ip_info['org'] : 'N/A';
 
+$org_parts = explode(" ", $org_info, 2);
+$as_number = $org_parts[0];
+$organization = isset($org_parts[1]) ? $org_parts[1] : 'N/A'; 
 
-// Get system information
 $hostname = execute_command("ubus call system board | jsonfilter -e '@.hostname'");
 $firmware_version = execute_command("ubus call system board | jsonfilter -e '@.release.description'");
 $kernel = execute_command("uname -r");
@@ -207,7 +218,6 @@ $model = execute_command("ubus call system board | jsonfilter -e '@.model'");
 $local_time = execute_command("date");
 $php_version = phpversion();
 
-// Check application statuses
 $radiusd_status = check_service_status('radiusd');
 $mysql_status = check_service_status('mysqld');
 $openclash_status = check_service_status('openclash');
@@ -297,6 +307,9 @@ $coova_chilli_status = check_service_status('chilli');
                                         <th><center><span class='info-label'>IP Address:</span> <span class='status-running''><?php echo $ip; ?></span></th>
                                     </tr>
                                     <tr>
+                                        <th><center><span class='info-label'>Hostname:</span> <span class='status-running''><?php echo $host; ?></span></th>
+                                    </tr>
+                                    <tr>
                                         <th><center><span class='info-label'>City:</span> <span class='status-running''><?php echo $city; ?></span></th>
                                     </tr>
                                     <tr>
@@ -306,7 +319,10 @@ $coova_chilli_status = check_service_status('chilli');
                                         <th><center><span class='info-label'>Country:</span> <span class='status-running''><?php echo $country; ?></span></th>
                                     </tr>
                                     <tr>
-                                        <th><center><span class='info-label'>Org:</span> <span class='status-running''><?php echo $org; ?></span></th>
+                                        <th><center><span class='info-label'>As:</span> <span class='status-running''><?php echo $as_number; ?></span></th>
+                                    </tr>
+                                    <tr>
+                                        <th><center><span class='info-label'>Org:</span> <span class='status-running''><?php echo $organization; ?></span></th>
                                     </tr>
                                 </tbody>
                             </table>

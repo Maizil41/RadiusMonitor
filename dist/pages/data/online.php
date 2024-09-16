@@ -8,9 +8,7 @@
 * © 2024 Mutiara-Net By @Maizil
 *******************************************************************************************************************
 */
-?>
-<?php
-// Query SQL
+
 $sql = "SELECT ra.username, 
        ra.acctstarttime, 
        ra.framedipaddress, 
@@ -23,7 +21,6 @@ LIMIT 10";
 
 $result = $conn->query($sql);
 
-// Cek apakah ada hasil
 if ($result->num_rows > 0) {
     // Menampilkan data
     while($row = $result->fetch_assoc()) {

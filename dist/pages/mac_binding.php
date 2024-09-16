@@ -82,6 +82,21 @@ require './auth.php';
                                     </a> </li>
                             </ul>
                         </li>
+                        <li class="nav-item"> <a href="#" class="nav-link"> <i class="nav-icon bi payment"></i>
+                                <p>
+                                    Payment
+                                    <span class="nav-badge badge text-bg-secondary me-3"></span> <i class="nav-arrow bi iconoir--nav-arrow-right"></i>
+                                </p>
+                            </a>
+                            <ul class="nav nav-treeview">
+                                <li class="nav-item"> <a href="./billing/admin.php" class="nav-link"> <i class="nav-icon bi payment-clock"></i>
+                                        <p>Request</p>
+                                    </a> </li>
+                                <li class="nav-item"> <a href="./billing/balance.php" class="nav-link"> <i class="nav-icon bi wallet"></i>
+                                        <p>Balance</p>
+                                    </a> </li>
+                            </ul>
+                        </li>
                         <li class="nav-item"> <a href="#" class="nav-link"> <i class="nav-icon bi mdi--printer"></i>
                                 <p>
                                     Print
@@ -94,6 +109,9 @@ require './auth.php';
                                     </a> </li>
                                 <li class="nav-item"> <a href="./list_batch.php" class="nav-link"> <i class="nav-icon bi material-symbols--group-add"></i>
                                         <p>Batch</p>
+                                    </a> </li>
+                                <li class="nav-item"> <a href="./print_setting.php" class="nav-link"> <i class="nav-icon bi print-settings"></i>
+                                        <p>Setting</p>
                                     </a> </li>
                             </ul>
                         </li>
@@ -135,8 +153,12 @@ require './auth.php';
     <button id="confirmYes">Yes</button>
     <button id="confirmNo" class="cancel">No</button>
 </div>
+<div id="popupMessage" class="confirm-popup">
+    <p id="popupText"></p>
+    <button id="popupClose">OK</button>
+</div>
 <?php
-include("data/db.php");
+require './data/mysqli_db.php';
 
 if (isset($_GET['id'])) {
     $id = $_GET['id'];
@@ -360,12 +382,9 @@ echo"
             <td><center>$totalTime</td>
             <td><center>$traffic</td>
             <td><center><span class='status $statusClass'>$status</span></td>
-            <td>
-                <center>
-                    <button class='btn btn-danger btn-sm' onclick=\"deleteUser('$username')\">
-                        <i class='fa6-solid--trash-can'></i>
-                    </button>
-                </center>
+            <td><center>
+                <button class='btn btn-warning btn-sm' onclick=\"resetUserPopup('$username')\"><i class='recycle'></i></button>
+                <button class='btn btn-danger btn-sm' onclick=\"deleteUser('$username')\"><i class='fa6-solid--trash-can'></i></button>
             </td>
         </tr>";
     }
@@ -411,36 +430,77 @@ Radius Monitor by
 <script>document.getElementById('userstatus').addEventListener('change',function(){const status=this.value;const currentPage=new URLSearchParams(window.location.search).get('page')||1;window.location.href=`?page=${currentPage}&status=${status}`});</script>
 <script>
 let deleteUserUsername = '';
+let resetUsername = '';
 
-function showConfirmPopup(message, username) {
+function showConfirmPopup(message, username, actionType) {
     document.getElementById('confirmMessage').innerText = message;
     document.getElementById('overlay').classList.add('show');
     document.getElementById('confirmPopup').classList.add('show');
-    deleteUserUsername = username; // Simpan username yang akan dihapus
+
+    deleteUserUsername = '';
+    resetUsername = '';
+
+    if (actionType === 'delete') {
+        deleteUserUsername = username;
+    } else if (actionType === 'reset') {
+        resetUsername = username;
+    }
 }
 
-function closeConfirmPopup(confirmed) {
+function closeConfirmPopup(confirmed, actionType) {
     document.getElementById('overlay').classList.remove('show');
     document.getElementById('confirmPopup').classList.remove('show');
+
     if (confirmed) {
-        if (deleteUserUsername) {
-            // Redirect ke halaman penghapusan dengan username yang disimpan
+        if (actionType === 'delete' && deleteUserUsername) {
             window.location.href = `mac_binding.php?id=${encodeURIComponent(deleteUserUsername)}`;
+        } else if (actionType === 'reset' && resetUsername) {
+            resetuser(resetUsername);
         }
     }
 }
 
 document.getElementById('confirmYes').onclick = function() {
-    closeConfirmPopup(true);
+    closeConfirmPopup(true, deleteUserUsername ? 'delete' : 'reset');
 };
 
 document.getElementById('confirmNo').onclick = function() {
-    closeConfirmPopup(false);
+    closeConfirmPopup(false, deleteUserUsername ? 'delete' : 'reset');
 };
 
-// Fungsi untuk memanggil popup konfirmasi
 function deleteUser(username) {
-    showConfirmPopup(`Apakah Anda yakin ingin menghapus mac ${username}?`, username);
+    showConfirmPopup(`Apakah Anda yakin ingin menghapus Mac ${username}?`, username, 'delete');
+}
+
+function resetUserPopup(username) {
+    showConfirmPopup(`Apakah Anda yakin ingin mereset Mac ${username}?`, username, 'reset');
+}
+
+function showPopupMessage(message) {
+    document.getElementById('popupText').innerText = message;
+    document.getElementById('popupMessage').classList.add('show');
+}
+
+function closePopupMessage() {
+    document.getElementById('popupMessage').classList.remove('show');
+}
+
+document.getElementById('popupClose').onclick = function() {
+    closePopupMessage();
+};
+
+function resetuser(username) {
+    var xhr = new XMLHttpRequest();
+    xhr.open("POST", "reset_user.php", true);
+    xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+
+    xhr.onreadystatechange = function () {
+        if (xhr.readyState === 4 && xhr.status === 200) {
+            window.location.href = `mac_binding.php?reset=success`;
+        }
+    };
+
+    xhr.send("username=" + encodeURIComponent(username));
 }
 </script>
 </body>

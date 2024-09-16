@@ -82,6 +82,21 @@ require './auth.php';
                                     </a> </li>
                             </ul>
                         </li>
+                        <li class="nav-item"> <a href="#" class="nav-link"> <i class="nav-icon bi payment"></i>
+                                <p>
+                                    Payment
+                                    <span class="nav-badge badge text-bg-secondary me-3"></span> <i class="nav-arrow bi iconoir--nav-arrow-right"></i>
+                                </p>
+                            </a>
+                            <ul class="nav nav-treeview">
+                                <li class="nav-item"> <a href="./billing/admin.php" class="nav-link"> <i class="nav-icon bi payment-clock"></i>
+                                        <p>Request</p>
+                                    </a> </li>
+                                <li class="nav-item"> <a href="./billing/balance.php" class="nav-link"> <i class="nav-icon bi wallet"></i>
+                                        <p>Balance</p>
+                                    </a> </li>
+                            </ul>
+                        </li>
                         <li class="nav-item"> <a href="#" class="nav-link"> <i class="nav-icon bi mdi--printer"></i>
                                 <p>
                                     Print
@@ -94,6 +109,9 @@ require './auth.php';
                                     </a> </li>
                                 <li class="nav-item"> <a href="./list_batch.php" class="nav-link"> <i class="nav-icon bi material-symbols--group-add"></i>
                                         <p>Batch</p>
+                                    </a> </li>
+                                <li class="nav-item"> <a href="./print_setting.php" class="nav-link"> <i class="nav-icon bi print-settings"></i>
+                                        <p>Setting</p>
                                     </a> </li>
                             </ul>
                         </li>
@@ -178,10 +196,6 @@ require './auth.php';
         </div>
     </div>
 </form>
-    </div>
-        </div>
-    </div>
-</div>
 </main>
 <footer class="app-footer"> <!--begin::To the end-->
 <div class="float-end d-none d-sm-inline">Themes by <a href="https://adminlte.io" target="_blank" class="text-decoration-none">AdminLTE.io</a></div>
@@ -245,21 +259,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Tanggal pembuatan (creation_date)
     $creation_date = date('Y-m-d H:i:s');
 
-    // Koneksi ke database
-    $servername = "127.0.0.1";
-    $username = "radius";
-    $password = "radius";
-    $dbname = "radius";
+    require './data/mysqli_db.php';
 
-    // Buat koneksi
-    $conn = new mysqli($servername, $username, $password, $dbname);
-
-    // Cek koneksi
-    if ($conn->connect_error) {
-        die("Koneksi gagal: " . $conn->connect_error);
-    }
-
-    // Cek apakah nama sudah ada di database
     $sql = "SELECT COUNT(*) as count FROM bandwidth WHERE name = ?";
     $stmt = $conn->prepare($sql);
     if ($stmt) {

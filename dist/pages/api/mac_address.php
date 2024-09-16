@@ -9,19 +9,8 @@
 *******************************************************************************************************************
 */
 
-// Koneksi ke database
-$servername = "127.0.0.1";
-$username = "radius";
-$password = "radius";
-$dbname = "radius";
+require '../data/mysqli_db.php';
 
-$conn = new mysqli($servername, $username, $password, $dbname);
-
-if ($conn->connect_error) {
-    die("Connection failed: " . $conn->connect_error);
-}
-
-// Query untuk mendapatkan username yang berupa MAC address dari radpostauth, radcheck, dan radacct
 $sql_mac = "
 SELECT DISTINCT username
 FROM (
@@ -46,7 +35,7 @@ if (!$result_mac) {
 }
 
 $options = array();
-$options['data'] = array(); // Menggunakan 'data' untuk menyimpan hasil
+$options['data'] = array();
 
 if ($result_mac->num_rows > 0) {
     while($row = $result_mac->fetch_assoc()) {
@@ -58,9 +47,7 @@ if ($result_mac->num_rows > 0) {
 
 $conn->close();
 
-// Menetapkan header konten JSON
 header('Content-Type: application/json');
 
-// Mengeluarkan data dalam format JSON
 echo json_encode($options);
 ?>

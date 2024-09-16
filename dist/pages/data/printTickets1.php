@@ -1,8 +1,20 @@
 <?php
 // PrintTickets RadiusMonitor By Maizil
 include "phpqrcode/qrlib.php";
-$cs = "CS: 0853-7268-7484";
-$dnsname = "http://mutiara.net";
+
+$jsonFile = 'config_print.json';
+$jsonData = file_get_contents($jsonFile);
+
+$config = json_decode($jsonData, true);
+
+$hsname1 = isset($config['hsname1']) ? $config['hsname1'] : '';
+$hsname2 = isset($config['hsname2']) ? $config['hsname2'] : '';
+$hsip = isset($config['hsip']) ? $config['hsip'] : '';
+$hsdomain = isset($config['hsdomain']) ? $config['hsdomain'] : '';
+$hscsn = isset($config['hscsn']) ? $config['hscsn'] : '';
+$hsqrmode = isset($config['hsqrmode']) ? $config['hsqrmode'] : '';
+$hsipdomain = isset($config['hsipdomain']) ? $config['hsipdomain'] : '';
+$logomode = isset($config['logomode']) ? $config['logomode'] : '';
 
 $configValues = array(
     "CONFIG_DB_TBL_DALOBILLINGPLANS" => "billing_plans",
@@ -103,7 +115,7 @@ function time2str($time) {
 
 function printTicketsHTMLTable($accounts, $ticketCost, $ticketTime, $ticketQuota, $ticketActiveTime, $timestamp)
 {
-    global $dnsname, $cs;
+    global $dnsname, $hslogo, $hsip, $hscsn, $hsdomain, $hsname1, $hsname2, $hsqrmode, $hsipdomain, $qrcodeData, $logomode;
 
     if ($ticketCost <= 500) {
         $color = "#4bde97";
@@ -131,15 +143,28 @@ function printTicketsHTMLTable($accounts, $ticketCost, $ticketTime, $ticketQuota
 <tr>
 <td style="font-size: 13.5px; font-weight: bold; line white; color:#fff;background-color:<?php echo $color; ?>; -webkit-print-color-adjust: exact;" class="rotate" rowspan="4"><span>Rp.<?php echo $ticketCost; ?></span></td>
 </div>
-<td><center><span style="font-size: 13.5px;font-weight: bold;">𝗠𝗨𝗧𝗜𝗔𝗥𝗔<span style="color:<?php echo $color; ?>;">𝗡𝗘𝗧</td>
+<?php if ($logomode == "text"): ?>
+<td><center><span style="font-size: 13.5px;font-weight: bold;"><?php echo $hsname1; ?><span style="color:<?php echo $color; ?>;"><?php echo $hsname2; ?></td>
+<?php elseif ($logomode == "image"): ?>
+<td><center><img src="../logo/logo.png" alt="logo" style="height: 20px; width: 70px; border: 0;"></td>
+<?php endif; ?>
 <td style="" rowspan="4">
 <?php
 $tempdir = "tmp/";
 if (!file_exists($tempdir)) {
     mkdir($tempdir);
+} 
+
+if($hsqrmode == "code") {
+    $qrcodeData = "$user";
+} elseif ($hsqrmode == "url") {
+    if($hsipdomain == "ip") {
+        $qrcodeData = "http://$hsip:3990/login?username=$user&password=$pass";
+    } elseif ($hsipdomain == "domain") {
+        $qrcodeData = "http://$hsdomain:3990/login?username=$user&password=$pass";
+    }
 }
 
-$qrcodeData = "$user";
 $errorCorrectionLevel = "L";
 QRcode::png(
     $qrcodeData,
@@ -165,7 +190,7 @@ echo '<img src="' .
 <td style="font-weight: bold; font-size: 10px; color:#000000;"><center><?php echo $ticketActiveTime; ?>  <?php echo $ticketTime; ?>  <?php echo $ticketQuota; ?> 
 </tr>
 <tr>
-<td style="font-weight: bold; font-size: 10px; color:#000000;"><center><?php echo $cs; ?></td>
+<td style="font-weight: bold; font-size: 10px; color:#000000;"><center>CS : <?php echo $hscsn; ?></td>
 </tr>
 </tbody>
 </table> 

@@ -9,13 +9,14 @@
 *******************************************************************************************************************
 */
 require './auth.php';
-session_start(); // Memulai session jika menggunakan $_SESSION
+session_start();
 
-// Konfigurasi database, ganti dengan nilai yang sesuai
-$host = '127.0.0.1'; // Contoh nilai
-$dbname = 'radius'; // Contoh nilai
-$username = 'radius'; // Contoh nilai
-$password = 'radius'; // Contoh nilai
+require './data/db_config.php';
+
+$host = $db_config['servername'];
+$dbname = $db_config['dbname'];
+$username = $db_config['username'];
+$password = $db_config['password'];
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     if (isset($_FILES['sqlFile']) && $_FILES['sqlFile']['error'] == UPLOAD_ERR_OK) {
@@ -46,24 +47,19 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $_SESSION['message_type'] = "error";
         }
     } elseif (isset($_POST['action']) && $_POST['action'] == 'download') {
-        // Nama file backup
         $backupFile = 'backup_' . date('Ymd_His') . '.sql';
 
-        // Command untuk backup database
         $command = "mysqldump --opt -h" . escapeshellarg($host) . " -u" . escapeshellarg($username) . " -p" . escapeshellarg($password) . " " . escapeshellarg($dbname) . " > " . escapeshellarg($backupFile);
         exec($command, $output, $return_var);
 
         if ($return_var === 0 && file_exists($backupFile)) {
-            // Set header untuk download file
             header('Content-Description: File Transfer');
             header('Content-Type: application/octet-stream');
             header('Content-Disposition: attachment; filename="' . basename($backupFile) . '"');
             header('Content-Length: ' . filesize($backupFile));
 
-            // Output file ke browser
             readfile($backupFile);
 
-            // Hapus file backup setelah dikirim
             unlink($backupFile);
             exit;
         } else {
@@ -73,7 +69,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     }
 }
 
-// Membaca dan menampilkan file log
 $limit = 20;
 $logFile = '/tmp/log/radius.log';
 
@@ -89,16 +84,13 @@ if (file_exists($logFile)) {
     $log = ['File log tidak ditemukan.'];
 }
 
-// Membalikkan urutan log
 $log = array_reverse($log);
 
 $logString = '';
 foreach ($log as $line) {
-    // Cek apakah baris log mengandung 'Login incorrect'
     if (strpos($line, 'Login incorrect') !== false) {
-        // Cek apakah terdapat MAC address dalam baris log
         if (preg_match('/\[([A-Fa-f0-9]{2}[:-]){5}[A-Fa-f0-9]{2}\//', $line)) {
-            continue; // Lewati baris log ini jika mengandung 'Login incorrect' dan MAC address
+            continue;
         }
     }
 
@@ -180,6 +172,21 @@ foreach ($log as $line) {
                                     </a> </li>
                             </ul>
                         </li>
+                        <li class="nav-item"> <a href="#" class="nav-link"> <i class="nav-icon bi payment"></i>
+                                <p>
+                                    Payment
+                                    <span class="nav-badge badge text-bg-secondary me-3"></span> <i class="nav-arrow bi iconoir--nav-arrow-right"></i>
+                                </p>
+                            </a>
+                            <ul class="nav nav-treeview">
+                                <li class="nav-item"> <a href="./billing/admin.php" class="nav-link"> <i class="nav-icon bi payment-clock"></i>
+                                        <p>Request</p>
+                                    </a> </li>
+                                <li class="nav-item"> <a href="./billing/balance.php" class="nav-link"> <i class="nav-icon bi wallet"></i>
+                                        <p>Balance</p>
+                                    </a> </li>
+                            </ul>
+                        </li>
                         <li class="nav-item"> <a href="#" class="nav-link"> <i class="nav-icon bi mdi--printer"></i>
                                 <p>
                                     Print
@@ -192,6 +199,9 @@ foreach ($log as $line) {
                                     </a> </li>
                                 <li class="nav-item"> <a href="./list_batch.php" class="nav-link"> <i class="nav-icon bi material-symbols--group-add"></i>
                                         <p>Batch</p>
+                                    </a> </li>
+                                <li class="nav-item"> <a href="./print_setting.php" class="nav-link"> <i class="nav-icon bi print-settings"></i>
+                                        <p>Setting</p>
                                     </a> </li>
                             </ul>
                         </li>
@@ -298,10 +308,8 @@ Radius Monitor by
 function handleRestore() {
     var fileInput = document.getElementById('sqlFile');
     if (!fileInput.files.length) {
-        // Tampilkan popup alert kustom
         showAlertPopup('File tidak ada. Harap pilih file terlebih dahulu.');
     } else {
-        // Tampilkan popup konfirmasi kustom
         showConfirmPopup('Apakah Anda yakin ingin mengganti database dengan file yang dipilih?', function() {
             document.getElementById('restoreForm').submit();
         });

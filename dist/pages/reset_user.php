@@ -8,33 +8,23 @@
 * © 2024 Mutiara-Net By @Maizil
 *******************************************************************************************************************
 */
-?>
-<?php
-require '../data/mysqli_db.php';
+require './data/mysqli_db.php';
 
-$sql_bw = "SELECT DISTINCT name, rate_down, rate_up FROM bandwidth";
-$result_bw = $conn->query($sql_bw);
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $username = $_POST['username'];
+    
+    $username = mysqli_real_escape_string($conn, $username);
 
-if (!$result_bw) {
-    die("Query failed: " . $conn->error);
-}
+    $sql = "UPDATE radacct 
+            SET acctsessiontime = 0, acctinputoctets = 0, acctoutputoctets = 0, acctterminatecause = 'Admin-Reset' 
+            WHERE username = '$username'";
 
-$options = array();
-$options['data'] = array();
-
-if ($result_bw->num_rows > 0) {
-    while($row = $result_bw->fetch_assoc()) {
-        $options['data'][] = array(
-            'bw_name' => $row['name'],
-            'rate_down' => $row['rate_down'],
-            'rate_up' => $row['rate_up']
-        );
+    if (mysqli_query($conn, $sql)) {
+        header('Location: list_user.php?reset=success');
+        exit();
+    } else {
+        header('Location: list_user.php?reset=failure');
+        exit();
     }
 }
-
-$conn->close();
-
-header('Content-Type: application/json');
-
-echo json_encode($options);
 ?>

@@ -1,9 +1,20 @@
 <?php
 // PrintTickets RadiusMonitor By Maizil
 include "phpqrcode/qrlib.php";
-$cs = "CS : 0853-7268-7484";
-$dnsname = "http://mutiara.net";
-$hotspotname = "Mutiara.Net";
+
+$jsonFile = 'config_print.json';
+$jsonData = file_get_contents($jsonFile);
+
+$config = json_decode($jsonData, true);
+
+$hsname1 = isset($config['hsname1']) ? $config['hsname1'] : '';
+$hsname2 = isset($config['hsname2']) ? $config['hsname2'] : '';
+$hsip = isset($config['hsip']) ? $config['hsip'] : '';
+$hsdomain = isset($config['hsdomain']) ? $config['hsdomain'] : '';
+$hscsn = isset($config['hscsn']) ? $config['hscsn'] : '';
+$hsqrmode = isset($config['hsqrmode']) ? $config['hsqrmode'] : '';
+$hsipdomain = isset($config['hsipdomain']) ? $config['hsipdomain'] : '';
+$logomode = isset($config['logomode']) ? $config['logomode'] : '';
 
 $configValues = array(
     "CONFIG_DB_TBL_DALOBILLINGPLANS" => "billing_plans",
@@ -104,7 +115,7 @@ function time2str($time) {
 
 function printTicketsHTMLTable($accounts, $ticketCost, $ticketTime, $ticketQuota, $ticketActiveTime, $timestamp)
 {
-    global $dnsname, $cs, $hotspotname;
+    global $dnsname, $hslogo, $hsip, $hscsn, $hsdomain, $hsname1, $hsname2, $hsqrmode, $hsipdomain, $qrcodeData, $logomode;
 
     if ($ticketCost <= 500) {
         $color = "#4bde97";
@@ -138,12 +149,16 @@ function printTicketsHTMLTable($accounts, $ticketCost, $ticketTime, $ticketQuota
                 <div style="position:relative;z-index:-1;padding: 0px;float:left;">
                   <div style="position:absolute;top:0;display:inline;margin-top:-100px;width: 0; height: 0; border-top: 230px solid transparent;border-left: 50px solid transparent;border-right:140px solid #DCDCDC; "></div>
                 </div>
-				<span style="font-size: 13.5px;font-weight: bold;">𝗠𝗨𝗧𝗜𝗔𝗥𝗔<span style="color:<?php echo $color; ?>;">𝗡𝗘𝗧
+                <?php if ($logomode == "text"): ?>
+				<span style="font-size: 13.5px;font-weight: bold;"><?php echo $hsname1; ?><span style="color:<?php echo $color; ?>;"><?php echo $hsname2; ?>
+                <?php elseif ($logomode == "image"): ?>
+                <img src="../logo/logo.png" alt="logo" style="height: 30px; width: 80px; border: 0;">
+                <?php endif; ?>
               </td>
               <td style="width:115px">
                 <div style="float:right;margin-top:-6px;margin-right:0px;width:5%;text-align:right;font-size:7px;"></div>
                 <div style="text-align:right;font-weight:bold;font-family:Tahoma;font-size:15px;padding-left:17px;color:
-										<?php echo $color ?>">Rp <?php echo $ticketCost;?> </div>
+				<?php echo $color ?>">Rp <?php echo $ticketCost;?> </div>
               </td>
             </tr>
           </tbody>
@@ -160,7 +175,7 @@ function printTicketsHTMLTable($accounts, $ticketCost, $ticketTime, $ticketQuota
                   <div style="padding:0px;border-bottom:1px solid;text-align:center;font-weight:bold;font-size:10px;color:#555">voucher</div>
                   <div style="padding:0px;border-bottom:1px solid;text-align:center;font-weight:bold;font-size:12px;color:#111;"> <?php echo $user;?> </div>
                 </div>
-                <div style="text-align:center;color:#111;font-size:9px;font-weight:bold;margin:0px;padding:2.5px;"> Hubungkan Ke Jaringan <?= $hotspotname; ?> <div style="text-align:center;color:#111;font-size:7px;font-weight:bold;margin:0px;padding:2.5px;"> Buka Browser Ketik: <?= $dnsname; ?> </div>
+                <div style="text-align:center;color:#111;font-size:9px;font-weight:bold;margin:0px;padding:2.5px;"> Hubungkan Ke Jaringan <?= $hsname1.$hsname2; ?> <div style="text-align:center;color:#111;font-size:7px;font-weight:bold;margin:0px;padding:2.5px;"> Buka Browser Ketik: <?= $hsip; ?> </div>
               </td>
               <p style=" margin-top:-14px;margin-bottom:5px">
                 <td style="width:100px;text-align:right;">
@@ -171,8 +186,17 @@ function printTicketsHTMLTable($accounts, $ticketCost, $ticketTime, $ticketQuota
                     if (!file_exists($tempdir)) {
                         mkdir($tempdir, 0777, true);
                     }
+                    
+                    if($hsqrmode == "code") {
+                        $qrcodeData = "$user";
+                    } elseif ($hsqrmode == "url") {
+                        if($hsipdomain == "ip") {
+                            $qrcodeData = "http://$hsip:3990/login?username=$user&password=$pass";
+                        } elseif ($hsipdomain == "domain") {
+                            $qrcodeData = "http://$hsdomain:3990/login?username=$user&password=$pass";
+                        }
+                    }
 
-                    $qrcodeData = "$user";
                     $errorCorrectionLevel = "L";
                     $matrixPointSize = 4;
 
@@ -184,7 +208,7 @@ function printTicketsHTMLTable($accounts, $ticketCost, $ticketTime, $ticketQuota
             </tr>
             <tr>
               <td style="background:<?php echo $color ?>;color:#666;padding:0px;" valign="top" colspan="2">
-                <div style="text-align:left;color:#fff;font-size:8px;font-weight:bold;margin:0px;padding:2.5px;"><?php echo $cs;?><br>
+                <div style="text-align:left;color:#fff;font-size:8px;font-weight:bold;margin:0px;padding:2.5px;"><?php echo $hscsn;?><br>
                 </div>
               </td>
             </tr>

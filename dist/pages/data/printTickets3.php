@@ -1,9 +1,20 @@
 <?php
 // PrintTickets RadiusMonitor By Maizil
 include "phpqrcode/qrlib.php";
-$cs = "CS: 0853-7268-7484";
-$dnsname = "http://mutiara.net";
-$hotspotname = "Mutiara.Net";
+
+$jsonFile = 'config_print.json';
+$jsonData = file_get_contents($jsonFile);
+
+$config = json_decode($jsonData, true);
+
+$hsname1 = isset($config['hsname1']) ? $config['hsname1'] : '';
+$hsname2 = isset($config['hsname2']) ? $config['hsname2'] : '';
+$hsip = isset($config['hsip']) ? $config['hsip'] : '';
+$hsdomain = isset($config['hsdomain']) ? $config['hsdomain'] : '';
+$hscsn = isset($config['hscsn']) ? $config['hscsn'] : '';
+$hsqrmode = isset($config['hsqrmode']) ? $config['hsqrmode'] : '';
+$hsipdomain = isset($config['hsipdomain']) ? $config['hsipdomain'] : '';
+$logomode = isset($config['logomode']) ? $config['logomode'] : '';
 
 $configValues = array(
     "CONFIG_DB_TBL_DALOBILLINGPLANS" => "billing_plans",
@@ -104,7 +115,7 @@ function time2str($time) {
 
 function printTicketsHTMLTable($accounts, $ticketCost, $ticketTime, $ticketQuota, $ticketActiveTime, $timestamp)
 {
-    global $dnsname, $cs, $hotspotname;
+    global $dnsname, $hslogo, $hsip, $hscsn, $hsdomain, $hsname1, $hsname2, $hsqrmode, $hsipdomain, $qrcodeData, $logomode;
 
     if ($ticketCost <= 500) {
         $color = "#4bde97";
@@ -154,7 +165,11 @@ function printTicketsHTMLTable($accounts, $ticketCost, $ticketTime, $ticketQuota
                   <div style="position:absolute;top:0;display:inline;margin-top:-100px;width: 0; height: 0; border-top: 230px solid transparent;border-left: 50px solid transparent;border-right:140px solid #DCDCDC; "></div>
                 </div>
                 </div>
-                <span style="font-size: 13.5px;font-weight: bold;">𝗠𝗨𝗧𝗜𝗔𝗥𝗔<span style="color:<?php echo $color; ?>;">𝗡𝗘𝗧
+                <?php if ($logomode == "text"): ?>
+               <span style="font-size: 13.5px;font-weight: bold;"><?php echo $hsname1; ?><span style="color:<?php echo $color; ?>;"><?php echo $hsname2; ?>
+              <?php elseif ($logomode == "image"): ?>
+              <img src="../logo/logo.png" alt="logo" style="height: 25px; width: 100px; border: 0;">
+              <?php endif; ?>
               </td>
               <td style="width:115px">
                 <div style="float:right;margin-top:-6px;margin-right:0px;width:5%;text-align:right;font-size:7px;"></div>
@@ -175,10 +190,9 @@ function printTicketsHTMLTable($accounts, $ticketCost, $ticketTime, $ticketQuota
                 <div style="clear:both;color:#555;margin-top:5px;margin-bottom:2.5px;">
                   <div style="padding:0px;border-bottom:1px solid;text-align:center;font-weight:bold;font-size:9px;color:#444">𝘒𝘖𝘋𝘌 𝘝𝘖𝘜𝘊𝘏𝘌𝘙</div>
                   <div style="padding:0px;border-bottom:1px solid;text-align:center;font-weight:bold;font-size:14px;color:
-													<?php echo $color ?>"> <?php echo $user;?> </div>
-                  <!--mks-voucher-akhir-->
+					<?php echo $color ?>"> <?php echo $user;?> </div>
                 </div>
-                <div style="text-align:center;color:#111;font-size:8px;font-weight:bold;margin:0px;padding:2.5px;"> Hubungkan Ke Jaringan <?= $hotspotname; ?> Buka Browser Ketik: <?= $dnsname; ?> </div>
+                <div style="text-align:center;color:#111;font-size:8px;font-weight:bold;margin:0px;padding:2.5px;"> Hubungkan Ke Jaringan <?= $hsname1.$hsname2; ?> Buka Browser Ketik: <?= $hsip; ?> </div>
               </td>
               <p style=" margin-top:-10px;margin-bottom:0px">
                 <td style="width:100px;text-align:right;">
@@ -191,7 +205,16 @@ function printTicketsHTMLTable($accounts, $ticketCost, $ticketTime, $ticketQuota
                             mkdir($tempdir, 0777, true);
                         }
 
-                        $qrcodeData = "$user";
+                        if($hsqrmode == "code") {
+                            $qrcodeData = "$user";
+                        } elseif ($hsqrmode == "url") {
+                            if($hsipdomain == "ip") {
+                                $qrcodeData = "http://$hsip:3990/login?username=$user&password=$pass";
+                            } elseif ($hsipdomain == "domain") {
+                                $qrcodeData = "http://$hsdomain:3990/login?username=$user&password=$pass";
+                            }
+                        }
+
                         $errorCorrectionLevel = "L";
                         $matrixPointSize = 4;
 

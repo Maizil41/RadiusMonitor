@@ -1,5 +1,16 @@
 <?php
-require 'data/pdo.php';
+/*
+*******************************************************************************************************************
+* Warning!!!, Tidak untuk diperjual belikan!, Cukup pakai sendiri atau share kepada orang lain secara gratis
+*******************************************************************************************************************
+* Dibuat oleh @Maizil https://t.me/maizil41
+*******************************************************************************************************************
+* © 2024 Mutiara-Net By @Maizil
+*******************************************************************************************************************
+*/
+require './data/pdo_db.php';
+
+$conn = get_db_connection();
 
 session_start();
 
@@ -7,7 +18,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $username = $_POST['username'];
     $password = $_POST['password'];
 
-    $stmt = $pdo->prepare("SELECT password FROM operators WHERE username = ?");
+    $stmt = $conn->prepare("SELECT password FROM operators WHERE username = ?");
     $stmt->execute([$username]);
     $user = $stmt->fetch();
 

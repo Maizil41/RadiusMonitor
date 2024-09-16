@@ -11,22 +11,10 @@
 ?>
 <?php
 header('Content-Type: application/json');
-header('Access-Control-Allow-Origin: *'); // Mengizinkan akses dari semua origin
+header('Access-Control-Allow-Origin: *');
 
-$servername = "127.0.0.1";
-$username = "radius";
-$password = "radius";
-$dbname = "radius";
+require '../data/mysqli_db.php';
 
-// Create connection
-$conn = new mysqli($servername, $username, $password, $dbname);
-
-// Check connection
-if ($conn->connect_error) {
-    die("Connection failed: " . $conn->connect_error);
-}
-
-// Function to convert bytes to appropriate unit
 function convertBytes($bytes) {
     if ($bytes < 1024) {
         return ['value' => $bytes, 'unit' => 'bytes'];
@@ -39,16 +27,14 @@ function convertBytes($bytes) {
     }
 }
 
-// Function to round quota values
 function roundQuota($bytes) {
     $converted = convertBytes($bytes);
     return [
-        'value' => round($converted['value'], 2), // Limit to 2 decimal places
+        'value' => round($converted['value'], 2),
         'unit' => $converted['unit']
     ];
 }
 
-// Function to execute a query and fetch the results
 function fetchQueryResults($conn, $query) {
     $result = $conn->query($query);
     $data = [];
@@ -58,8 +44,8 @@ function fetchQueryResults($conn, $query) {
     return $data;
 }
 
-// Query for daily revenue
 $query_total_hari = "
+SELECT * FROM (
     SELECT 
         tanggal,
         SUM(planCost) AS total_pendapatan
@@ -74,12 +60,15 @@ $query_total_hari = "
         GROUP BY tanggal, a.username
     ) AS daily_totals
     GROUP BY tanggal
-    ORDER BY tanggal;
+    ORDER BY tanggal DESC
+    LIMIT 10
+) AS latest_totals
+ORDER BY tanggal ASC;
 ";
 $daily_revenue = fetchQueryResults($conn, $query_total_hari);
 
-// Query for monthly revenue
 $query_total_bulan = "
+SELECT * FROM (
     SELECT 
         bulan,
         SUM(planCost) AS total_pendapatan
@@ -94,12 +83,15 @@ $query_total_bulan = "
         GROUP BY bulan, a.username
     ) AS monthly_totals
     GROUP BY bulan
-    ORDER BY bulan;
+    ORDER BY bulan DESC
+    LIMIT 10
+) AS latest_totals
+ORDER BY bulan ASC;
 ";
 $monthly_revenue = fetchQueryResults($conn, $query_total_bulan);
 
-// Query for yearly revenue
 $query_total_tahun = "
+SELECT * FROM (
     SELECT 
         tahun,
         SUM(planCost) AS total_pendapatan
@@ -114,89 +106,100 @@ $query_total_tahun = "
         GROUP BY tahun, a.username
     ) AS yearly_totals
     GROUP BY tahun
-    ORDER BY tahun;
+    ORDER BY tahun DESC
+    LIMIT 10
+) AS latest_totals
+ORDER BY tahun ASC;
 ";
 $yearly_revenue = fetchQueryResults($conn, $query_total_tahun);
 
-// Query for daily quota
 $query_kuota_hari = "
-    SELECT 
-        tanggal,
-        SUM(total_kuota) AS total_kuota
-    FROM (
+    SELECT * FROM (
         SELECT 
-            DATE(acctstarttime) AS tanggal,
-            r.username,
-            SUM(acctinputoctets + acctoutputoctets) AS total_kuota
-        FROM radcheck r
-        JOIN radacct a ON r.username = a.username
-        WHERE a.acctstarttime IS NOT NULL
-        GROUP BY tanggal, r.username
-    ) AS daily_totals
-    GROUP BY tanggal
-    ORDER BY tanggal;
+            tanggal,
+            SUM(total_kuota) AS total_kuota
+        FROM (
+            SELECT 
+                DATE(acctstarttime) AS tanggal,
+                r.username,
+                SUM(acctinputoctets + acctoutputoctets) AS total_kuota
+            FROM radcheck r
+            JOIN radacct a ON r.username = a.username
+            WHERE a.acctstarttime IS NOT NULL
+            GROUP BY tanggal, r.username
+        ) AS daily_totals
+        GROUP BY tanggal
+        ORDER BY tanggal DESC
+        LIMIT 10
+    ) AS latest_totals
+    ORDER BY tanggal ASC;
 ";
 $daily_quota = fetchQueryResults($conn, $query_kuota_hari);
 foreach ($daily_quota as &$quota) {
     $converted = roundQuota($quota['total_kuota']);
-    $quota['tanggal'] = $quota['tanggal']; // Make sure 'tanggal' key is set
+    $quota['tanggal'] = $quota['tanggal']; 
     $quota['total_kuota'] = $converted['value'];
     $quota['unit'] = $converted['unit'];
 }
 
-// Query for monthly quota
 $query_kuota_bulan = "
-    SELECT 
-        bulan,
-        SUM(total_kuota) AS total_kuota
-    FROM (
+    SELECT * FROM (
         SELECT 
-            DATE_FORMAT(acctstarttime, '%Y-%m') AS bulan,
-            r.username,
-            SUM(acctinputoctets + acctoutputoctets) AS total_kuota
-        FROM radcheck r
-        JOIN radacct a ON r.username = a.username
-        WHERE a.acctstarttime IS NOT NULL
-        GROUP BY bulan, r.username
-    ) AS monthly_totals
-    GROUP BY bulan
-    ORDER BY bulan;
+            bulan,
+            SUM(total_kuota) AS total_kuota
+        FROM (
+            SELECT 
+                DATE_FORMAT(acctstarttime, '%Y-%m') AS bulan,
+                r.username,
+                SUM(acctinputoctets + acctoutputoctets) AS total_kuota
+            FROM radcheck r
+            JOIN radacct a ON r.username = a.username
+            WHERE a.acctstarttime IS NOT NULL
+            GROUP BY bulan, r.username
+        ) AS monthly_totals
+        GROUP BY bulan
+        ORDER BY bulan DESC
+        LIMIT 10
+    ) AS latest_totals
+    ORDER BY bulan ASC;
 ";
 $monthly_quota = fetchQueryResults($conn, $query_kuota_bulan);
 foreach ($monthly_quota as &$quota) {
     $converted = roundQuota($quota['total_kuota']);
-    $quota['bulan'] = $quota['bulan']; // Make sure 'bulan' key is set
+    $quota['bulan'] = $quota['bulan']; 
     $quota['total_kuota'] = $converted['value'];
     $quota['unit'] = $converted['unit'];
 }
 
-// Query for yearly quota
 $query_kuota_tahun = "
-    SELECT 
-        tahun,
-        SUM(total_kuota) AS total_kuota
-    FROM (
+    SELECT * FROM (
         SELECT 
-            DATE_FORMAT(acctstarttime, '%Y') AS tahun,
-            r.username,
-            SUM(acctinputoctets + acctoutputoctets) AS total_kuota
-        FROM radcheck r
-        JOIN radacct a ON r.username = a.username
-        WHERE a.acctstarttime IS NOT NULL
-        GROUP BY tahun, r.username
-    ) AS yearly_totals
-    GROUP BY tahun
-    ORDER BY tahun;
+            tahun,
+            SUM(total_kuota) AS total_kuota
+        FROM (
+            SELECT 
+                DATE_FORMAT(acctstarttime, '%Y') AS tahun,
+                r.username,
+                SUM(acctinputoctets + acctoutputoctets) AS total_kuota
+            FROM radcheck r
+            JOIN radacct a ON r.username = a.username
+            WHERE a.acctstarttime IS NOT NULL
+            GROUP BY tahun, r.username
+        ) AS yearly_totals
+        GROUP BY tahun
+        ORDER BY tahun DESC
+        LIMIT 10
+    ) AS latest_totals
+    ORDER BY tahun ASC;
 ";
 $yearly_quota = fetchQueryResults($conn, $query_kuota_tahun);
 foreach ($yearly_quota as &$quota) {
     $converted = roundQuota($quota['total_kuota']);
-    $quota['tahun'] = $quota['tahun']; // Make sure 'tahun' key is set
+    $quota['tahun'] = $quota['tahun']; 
     $quota['total_kuota'] = $converted['value'];
     $quota['unit'] = $converted['unit'];
 }
 
-// Send the JSON response
 echo json_encode([
     'daily_revenue' => $daily_revenue,
     'monthly_revenue' => $monthly_revenue,

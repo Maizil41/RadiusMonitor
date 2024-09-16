@@ -1,18 +1,14 @@
 <?php
-function get_db_connection() {
-    $host = '127.0.0.1';
-    $db = 'radius';
-    $user = 'radius';
-    $pass = 'radius';
-    try {
-        $pdo = new PDO("mysql:host=$host;dbname=$db", $user, $pass);
-        $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-        return $pdo;
-    } catch (PDOException $e) {
-        echo 'Connection failed: ' . $e->getMessage();
-        return null;
-    }
-}
+/*
+*******************************************************************************************************************
+* Warning!!!, Tidak untuk diperjual belikan!, Cukup pakai sendiri atau share kepada orang lain secara gratis
+*******************************************************************************************************************
+* Dibuat oleh @Maizil https://t.me/maizil41
+*******************************************************************************************************************
+* © 2024 Mutiara-Net By @Maizil
+*******************************************************************************************************************
+*/
+require './data/pdo_db.php';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['updatebillplans']) && $_POST['updatebillplans'] === 'top') {
     try {

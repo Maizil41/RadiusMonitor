@@ -82,6 +82,21 @@ require './auth.php';
                                     </a> </li>
                             </ul>
                         </li>
+                        <li class="nav-item"> <a href="#" class="nav-link"> <i class="nav-icon bi payment"></i>
+                                <p>
+                                    Payment
+                                    <span class="nav-badge badge text-bg-secondary me-3"></span> <i class="nav-arrow bi iconoir--nav-arrow-right"></i>
+                                </p>
+                            </a>
+                            <ul class="nav nav-treeview">
+                                <li class="nav-item"> <a href="./billing/admin.php" class="nav-link"> <i class="nav-icon bi payment-clock"></i>
+                                        <p>Request</p>
+                                    </a> </li>
+                                <li class="nav-item"> <a href="./billing/balance.php" class="nav-link"> <i class="nav-icon bi wallet"></i>
+                                        <p>Balance</p>
+                                    </a> </li>
+                            </ul>
+                        </li>
                         <li class="nav-item"> <a href="#" class="nav-link active"> <i class="nav-icon bi mdi--printer"></i>
                                 <p>
                                     Print
@@ -94,6 +109,9 @@ require './auth.php';
                                     </a> </li>
                                 <li class="nav-item"> <a href="./list_batch.php" class="nav-link active"> <i class="nav-icon bi material-symbols--group-add"></i>
                                         <p>Batch</p>
+                                    </a> </li>
+                                <li class="nav-item"> <a href="./print_setting.php" class="nav-link"> <i class="nav-icon bi print-settings"></i>
+                                        <p>Setting</p>
                                     </a> </li>
                             </ul>
                         </li>
@@ -147,7 +165,7 @@ require './auth.php';
                 </div>&nbsp;
             <div class="table-responsive">
 <?php
-include ("data/db.php");
+require './data/mysqli_db.php';
 
 // Jumlah batch yang ditampilkan per halaman
 $limit = 7;
@@ -370,24 +388,14 @@ document.querySelectorAll('form[data-confirm]').forEach(form => {
 </script>
 
 <?php
-try {
-    $dsn = 'mysql:host=127.0.0.1;dbname=radius';
-    $username = 'radius';
-    $password = 'radius';
-    $options = [
-        PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
-        PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-        PDO::ATTR_EMULATE_PREPARES   => false,
-    ];
+// Sertakan file koneksi
+require './data/pdo_db.php';
 
-    $conn = new PDO($dsn, $username, $password, $options);
-} catch (PDOException $e) {
-    die('Koneksi gagal: ' . $e->getMessage());
-}
+// Dapatkan koneksi dari fungsi get_db_connection
+$conn = get_db_connection();
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['id']) && isset($_POST['action']) && $_POST['action'] === 'delete') {
     $batch_id = intval($_POST['id']);
-
     $response = ['success' => false, 'message' => ''];
 
     try {
@@ -427,9 +435,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['id']) && isset($_POST
         echo "<script>window.location.href = 'list_batch.php';</script>";
         
     } catch (Exception $e) {
-
+        // Rollback transaksi jika ada error
         $conn->rollBack();
-        
         echo "<script>window.location.href = 'list_batch.php';</script>";
     }
 
@@ -438,6 +445,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['id']) && isset($_POST
     exit;
 }
 
+// Jika tidak ada request POST, kode lainnya di sini
 $rows = [];
 ?>
 </body>
