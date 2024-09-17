@@ -45,7 +45,7 @@ jobs:
           CHAT_ID: ${{ secrets.CHAT_ID }}
           COMMIT_MESSAGE: ${{ env.COMMIT_MESSAGE }}
           CURRENT_TIME: ${{ env.CURRENT_TIME }}
-          MESSAGE_THREAD_ID: ${{ secrets.MESSAGE_THREAD_ID }}
+          REPLY_TO_MESSAGE_ID: ${{ secrets.REPLY_TO_MESSAGE_ID }}
         run: |
           MESSAGE=$(cat <<-EOF
           ▬▬▬▬▬▬▬▬▬▬▬▬▬▬
@@ -62,4 +62,4 @@ jobs:
           -d chat_id=$CHAT_ID \
           -d parse_mode=Markdown \
           -d text="$MESSAGE" \
-          -d reply_to_message_id=$THREAD_ID
+          -d reply_to_message_id=$REPLY_TO_MESSAGE_ID
