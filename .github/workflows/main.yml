@@ -26,15 +26,15 @@ jobs:
         id: current_time
         run: echo "CURRENT_TIME=$(TZ=Asia/Jakarta date +'%Y-%m-%d %H:%M:%S')" >> $GITHUB_ENV
 
-      - name: Check if README.md was modified
-        id: check-readme
+      - name: Check if README.md or main.yml was modified
+        id: check-files
         run: |
           CHANGED_FILES=$(git diff-tree --no-commit-id --name-only -r HEAD)
-          if echo "$CHANGED_FILES" | grep -q "^README.md$"; then
-            echo "README.md was modified, skipping notification."
+          if echo "$CHANGED_FILES" | grep -qE "^(README.md|.github/workflows/main.yml)$"; then
+            echo "README.md or main.yml was modified, skipping notification."
             echo "SKIP_NOTIFICATION=true" >> $GITHUB_ENV
           else
-            echo "README.md was not modified, sending notification."
+            echo "No excluded files were modified, sending notification."
             echo "SKIP_NOTIFICATION=false" >> $GITHUB_ENV
           fi
 
