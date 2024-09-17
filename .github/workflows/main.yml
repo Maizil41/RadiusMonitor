@@ -26,7 +26,20 @@ jobs:
         id: current_time
         run: echo "CURRENT_TIME=$(TZ=Asia/Jakarta date +'%Y-%m-%d %H:%M:%S')" >> $GITHUB_ENV
 
+      - name: Check if README.md was modified
+        id: check-readme
+        run: |
+          CHANGED_FILES=$(git diff-tree --no-commit-id --name-only -r HEAD)
+          if echo "$CHANGED_FILES" | grep -q "^README.md$"; then
+            echo "README.md was modified, skipping notification."
+            echo "SKIP_NOTIFICATION=true" >> $GITHUB_ENV
+          else
+            echo "README.md was not modified, sending notification."
+            echo "SKIP_NOTIFICATION=false" >> $GITHUB_ENV
+          fi
+
       - name: Notify Telegram
+        if: env.SKIP_NOTIFICATION == 'false'
         env:
           TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
           CHAT_ID: ${{ secrets.CHAT_ID }}
