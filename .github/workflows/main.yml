@@ -22,13 +22,29 @@ jobs:
           echo "$COMMIT_MESSAGE" >> $GITHUB_ENV
           echo "EOF" >> $GITHUB_ENV
 
+      - name: Get current time
+        id: current_time
+        run: echo "CURRENT_TIME=$(TZ=Asia/Jakarta date +'%Y-%m-%d %H:%M:%S')" >> $GITHUB_ENV
+
       - name: Notify Telegram
         env:
           TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
           CHAT_ID: ${{ secrets.CHAT_ID }}
           COMMIT_MESSAGE: ${{ env.COMMIT_MESSAGE }}
+          CURRENT_TIME: ${{ env.CURRENT_TIME }}
         run: |
-          MESSAGE="Repository has been updated. Latest commit message:\n$COMMIT_MESSAGE"
+          MESSAGE=$(cat <<-EOF
+          ▬▬▬▬▬▬▬▬▬▬▬▬▬▬
+           UPDATE INFO
+          ▬▬▬▬▬▬▬▬▬▬▬▬▬▬
+          DESC   : \`$COMMIT_MESSAGE\`
+          DATE   : \`${CURRENT_TIME}\`
+          REPO   : \`Maizil41/RadiusMonitor\`
+          URL    : [Click Here](https://github.com/Maizil41/RadiusMonitor)
+          ▬▬▬▬▬▬▬▬▬▬▬▬▬▬
+          EOF
+          )
           curl -s -X POST "https://api.telegram.org/bot$TELEGRAM_TOKEN/sendMessage" \
           -d chat_id=$CHAT_ID \
+          -d parse_mode=Markdown \
           -d text="$MESSAGE"
