@@ -10,7 +10,6 @@
 
 Packages Needed
 ---
-
 - MySQL
 - Freeradius3
 - Coova-Chilli `(For Loginpage)`
