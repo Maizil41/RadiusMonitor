@@ -40,7 +40,7 @@ jobs:
           DESC   : \`$COMMIT_MESSAGE\`
           DATE   : \`${CURRENT_TIME}\`
           REPO   : \`Maizil41/RadiusMonitor\`
-          URL    : [Click Here](https://github.com/Maizil41/RadiusMonitor)
+          URL      : [Click Here](https://github.com/Maizil41/RadiusMonitor)
           ▬▬▬▬▬▬▬▬▬▬▬▬▬▬
           EOF
           )
