@@ -151,7 +151,7 @@ require '../auth.php';
 require '../data/mysqli_db.php';
 
 if (!isset($_GET['id'])) {
-    echo "<script>alert('Plan ID is missing!'); window.location.href = 'balance.php';</script>";
+    echo "<script>alert('UserID is missing!'); window.location.href = 'balance.php';</script>";
     exit();
 }
 
