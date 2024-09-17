@@ -14,11 +14,22 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
+      - name: Get list of changed files
+        id: changed-files
+        run: |
+          git fetch --prune --unshallow
+          CHANGED_FILES=$(git diff --name-only HEAD^ HEAD)
+          echo "CHANGED_FILES<<EOF" >> $GITHUB_ENV
+          echo "$CHANGED_FILES" >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
+
       - name: Notify Telegram
         env:
           TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
           CHAT_ID: ${{ secrets.CHAT_ID }}
+          CHANGED_FILES: ${{ env.CHANGED_FILES }}
         run: |
+          MESSAGE="Repository has been updated. Changed files:\n$CHANGED_FILES"
           curl -s -X POST "https://api.telegram.org/bot$TELEGRAM_TOKEN/sendMessage" \
           -d chat_id=$CHAT_ID \
-          -d text="Repository has been updated. Check the latest changes!"
+          -d text="$MESSAGE"
