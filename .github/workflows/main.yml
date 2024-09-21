@@ -1,11 +1,8 @@
-name: Notify Telegram on Update
+name: Notify Telegram on Release
 
 on:
-  push:
-    branches:
-      - main
-  pull_request:
-    types: [opened, synchronize, reopened]
+  release:
+    types: [published]
 
 jobs:
   notify:
@@ -14,47 +11,37 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Get commit message
-        id: commit-message
+      - name: Get release info
+        id: release-info
         run: |
-          COMMIT_MESSAGE=$(git log -1 --pretty=format:"%s")
-          echo "COMMIT_MESSAGE<<EOF" >> $GITHUB_ENV
-          echo "$COMMIT_MESSAGE" >> $GITHUB_ENV
-          echo "EOF" >> $GITHUB_ENV
+          echo "RELEASE_TAG=${{ github.event.release.tag_name }}" >> $GITHUB_ENV
+          echo "RELEASE_NAME=${{ github.event.release.name }}" >> $GITHUB_ENV
+          echo "RELEASE_BODY=${{ github.event.release.body }}" >> $GITHUB_ENV
 
       - name: Get current time
         id: current_time
         run: echo "CURRENT_TIME=$(TZ=Asia/Jakarta date +'%Y-%m-%d %H:%M:%S')" >> $GITHUB_ENV
 
-      - name: Check if README.md or main.yml was modified
-        id: check-files
-        run: |
-          CHANGED_FILES=$(git diff-tree --no-commit-id --name-only -r HEAD)
-          if echo "$CHANGED_FILES" | grep -qE "^(README.md|.github/workflows/main.yml)$"; then
-            echo "README.md or main.yml was modified, skipping notification."
-            echo "SKIP_NOTIFICATION=true" >> $GITHUB_ENV
-          else
-            echo "No excluded files were modified, sending notification."
-            echo "SKIP_NOTIFICATION=false" >> $GITHUB_ENV
-          fi
-
       - name: Notify Telegram
-        if: env.SKIP_NOTIFICATION == 'false'
         env:
           TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
           CHAT_ID: ${{ secrets.CHAT_ID }}
-          COMMIT_MESSAGE: ${{ env.COMMIT_MESSAGE }}
+          RELEASE_TAG: ${{ env.RELEASE_TAG }}
+          RELEASE_NAME: ${{ env.RELEASE_NAME }}
+          RELEASE_BODY: ${{ env.RELEASE_BODY }}
           CURRENT_TIME: ${{ env.CURRENT_TIME }}
           REPLY_TO_MESSAGE_ID: ${{ secrets.REPLY_TO_MESSAGE_ID }}
         run: |
           MESSAGE=$(cat <<-EOF
           ▬▬▬▬▬▬▬▬▬▬▬▬▬▬
-                           UPDATE INFO
+                           NEW RELEASE
           ▬▬▬▬▬▬▬▬▬▬▬▬▬▬
-          DESC   : \`$COMMIT_MESSAGE\`
-          DATE   : \`${CURRENT_TIME}\`
-          REPO   : \`Maizil41/RadiusMonitor\`
-          URL      : [Click Here](https://github.com/Maizil41/RadiusMonitor)
+          NAME    : \`${RELEASE_NAME}\`
+          TAG       : \`${RELEASE_TAG}\`
+          DESC     : \`${RELEASE_BODY}\`
+          DATE    : \`${CURRENT_TIME}\`
+          REPO    : \`Maizil41/RadiusMonitor\`
+          URL       : [Click Here](https://github.com/Maizil41/RadiusMonitor/releases/tag/${RELEASE_TAG})
           ▬▬▬▬▬▬▬▬▬▬▬▬▬▬
           EOF
           )
