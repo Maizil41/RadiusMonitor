@@ -34,7 +34,7 @@ jobs:
         run: |
           MESSAGE=$(cat <<-EOF
           ▬▬▬▬▬▬▬▬▬▬▬▬▬▬
-                           NEW RELEASE
+                           NEW UPDATE
           ▬▬▬▬▬▬▬▬▬▬▬▬▬▬
           NAME    : \`${RELEASE_NAME}\`
           TAG       : \`${RELEASE_TAG}\`
