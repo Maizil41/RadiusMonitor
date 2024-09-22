@@ -2,19 +2,28 @@
 // PrintTickets RadiusMonitor By Maizil
 include "phpqrcode/qrlib.php";
 
-$jsonFile = 'config_print.json';
-$jsonData = file_get_contents($jsonFile);
+require './mysqli_db.php';
+require './db_config.php';
 
-$config = json_decode($jsonData, true);
+$sql = "SELECT hsname1, hsname2, hsip, hsdomain, hscsn, hsqrmode, hsipdomain, logomode FROM print_config WHERE id = 1";
+$result = $conn->query($sql);
 
-$hsname1 = isset($config['hsname1']) ? $config['hsname1'] : '';
-$hsname2 = isset($config['hsname2']) ? $config['hsname2'] : '';
-$hsip = isset($config['hsip']) ? $config['hsip'] : '';
-$hsdomain = isset($config['hsdomain']) ? $config['hsdomain'] : '';
-$hscsn = isset($config['hscsn']) ? $config['hscsn'] : '';
-$hsqrmode = isset($config['hsqrmode']) ? $config['hsqrmode'] : '';
-$hsipdomain = isset($config['hsipdomain']) ? $config['hsipdomain'] : '';
-$logomode = isset($config['logomode']) ? $config['logomode'] : '';
+if ($result->num_rows > 0) {
+    $row = $result->fetch_assoc();
+
+    $hsname1 = isset($row['hsname1']) ? $row['hsname1'] : '';
+    $hsname2 = isset($row['hsname2']) ? $row['hsname2'] : '';
+    $hsip = isset($row['hsip']) ? $row['hsip'] : '';
+    $hsdomain = isset($row['hsdomain']) ? $row['hsdomain'] : '';
+    $hscsn = isset($row['hscsn']) ? $row['hscsn'] : '';
+    $hsqrmode = isset($row['hsqrmode']) ? $row['hsqrmode'] : '';
+    $hsipdomain = isset($row['hsipdomain']) ? $row['hsipdomain'] : '';
+    $logomode = isset($row['logomode']) ? $row['logomode'] : '';
+} else {
+    $hsname1 = $hsname2 = $hsip = $hsdomain = $hscsn = $hsqrmode = $hsipdomain = $logomode = '';
+}
+
+$conn->close();
 
 $configValues = array(
     "CONFIG_DB_TBL_DALOBILLINGPLANS" => "billing_plans",
@@ -34,11 +43,10 @@ if (isset($_REQUEST["type"]) && $_REQUEST["type"] == "batch") {
     $accounts_temp = $_REQUEST["accounts"];
     $accounts = explode("||", $accounts_temp);
 
-    // Konfigurasi database
-    $host = '127.0.0.1';
-    $dbname = 'radius';
-    $username = 'radius';
-    $password = 'radius';
+    $host = $db_config['servername'];
+    $dbname = $db_config['dbname'];
+    $username = $db_config['username'];
+    $password = $db_config['password'];
 
         $pdo = new PDO("mysql:host=$host;dbname=$dbname;charset=utf8", $username, $password);
         $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);

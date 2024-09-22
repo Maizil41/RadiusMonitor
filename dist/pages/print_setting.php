@@ -155,7 +155,14 @@ require './auth.php';
 <h3 class="mb-0">Print Settings</h3>
 </div> <!--end::Row-->
 </div> <!--end::Container-->
+<?php
+require './data/mysqli_db.php';
+$sql = "SELECT * FROM print_config LIMIT 1";
+$result = $conn->query($sql);
+$data = $result->fetch_assoc();
 
+$conn->close();
+?>
 <form class="form-horizontal" method="post" action="submit_config.php" enctype="multipart/form-data" role="form">
     <div class="col-sm-12 col-md-12">
         <div class="panel panel-primary panel-hovered panel-stacked mb30">
@@ -164,39 +171,39 @@ require './auth.php';
                 <div class="form-group">
                     <label class="col-md-2 control-label" for="hsname">Hotspot Name</label>
                     <div class="col-md-4">
-                        <input type="text" id="hsname1" name="hsname1" class="form-control" required>
+                        <input type="text" id="hsname1" name="hsname1" class="form-control" required value="<?php echo htmlspecialchars($data['hsname1']); ?>">
                     </div>
                     <div class="col-md-2">
-                        <input type="text" id="hsname2" name="hsname2" class="form-control" required>
+                        <input type="text" id="hsname2" name="hsname2" class="form-control" required value="<?php echo htmlspecialchars($data['hsname2']); ?>">
                     </div>
                 </div>
-                    <div class="form-group">
-                        <label class="col-md-2 control-label">Hotspot Logo</label>
-                        <div class="col-md-6">
-                            <input type="file" class="form-control" id="hslogo" name="hslogo" accept=".png,.jpg,.jpeg">
-                        </div>
-                        <span class="help-block col-md-4">
-                            <center><a href="./logo/logo.png" target="_blank"><img src="./logo/logo.png" height="48" class="logo-box" alt="logo"></a></center>
-                        </span>
+                <div class="form-group">
+                    <label class="col-md-2 control-label">Hotspot Logo</label>
+                    <div class="col-md-6">
+                        <input type="file" class="form-control" id="hslogo" name="hslogo" accept=".png,.jpg,.jpeg">
                     </div>
+                    <span class="help-block col-md-4">
+                        <center><a href="./logo/logo.png" target="_blank"><img src="./logo/logo.png" height="48" class="logo-box" alt="logo"></a></center>
+                    </span>
+                </div>
                 <div class="form-group">
                     <label class="col-md-2 control-label" for="hsip">Hotspot IP</label>
                     <div class="col-md-6">
-                        <input type="text" id="hsip" name="hsip" placeholder="10.10.10.1" class="form-control" required>
+                        <input type="text" id="hsip" name="hsip" placeholder="10.10.10.1" class="form-control" required value="<?php echo htmlspecialchars($data['hsip']); ?>">
                         <caption>This should contain the Chilli IP, Default 10.10.10.1</caption>
                     </div>
                 </div>
                 <div class="form-group">
                     <label class="col-md-2 control-label" for="hsdomain">Hotspot Domain</label>
                     <div class="col-md-6">
-                        <input type="text" id="hsdomain" name="hsdomain" placeholder="mutiara.net" class="form-control" required>
+                        <input type="text" id="hsdomain" name="hsdomain" placeholder="mutiara.net" class="form-control" required value="<?php echo htmlspecialchars($data['hsdomain']); ?>">
                         <caption>This domain must be registered in OpenWrt</caption>
                     </div>
                 </div>
                 <div class="form-group">
                     <label class="col-md-2 control-label" for="hscsn">CS Number</label>
                     <div class="col-md-6">
-                        <input type="text" id="hscsn" name="hscsn" placeholder="0812-XXXX-XXXX" class="form-control" required>
+                        <input type="text" id="hscsn" name="hscsn" placeholder="0812-XXXX-XXXX" class="form-control" required value="<?php echo htmlspecialchars($data['hscsn']); ?>">
                         <caption>Write your admin number, sample: 0853-7268-7484</caption>
                     </div>
                 </div>
@@ -204,8 +211,8 @@ require './auth.php';
                     <label class="col-md-2 control-label" for="hsqrmode">Qr Code Option</label>
                     <div class="col-md-6">
                         <select id="hsqrmode" name="hsqrmode" class="form-select">
-                            <option value="url">URL with Voucher Code</option>
-                            <option value="code">Voucher Code Only</option>
+                            <option value="url" <?php echo $data['hsqrmode'] == 'url' ? 'selected' : ''; ?>>URL with Voucher Code</option>
+                            <option value="code" <?php echo $data['hsqrmode'] == 'code' ? 'selected' : ''; ?>>Voucher Code Only</option>
                         </select>
                     </div>
                 </div>
@@ -213,8 +220,8 @@ require './auth.php';
                     <label class="col-md-2 control-label" for="hsipdomain">Qr Url Option</label>
                     <div class="col-md-6">
                         <select id="hsipdomain" name="hsipdomain" class="form-select">
-                            <option value="ip">Hotspot IP</option>
-                            <option value="domain">Hotspot Domain</option>
+                            <option value="ip" <?php echo $data['hsipdomain'] == 'ip' ? 'selected' : ''; ?>>Hotspot IP</option>
+                            <option value="domain" <?php echo $data['hsipdomain'] == 'domain' ? 'selected' : ''; ?>>Hotspot Domain</option>
                         </select>
                     </div>
                 </div>
@@ -222,8 +229,8 @@ require './auth.php';
                     <label class="col-md-2 control-label" for="logomode">Logo Mode</label>
                     <div class="col-md-6">
                         <select id="logomode" name="logomode" class="form-select">
-                            <option value="text">Text</option>
-                            <option value="image">Images</option>
+                            <option value="text" <?php echo $data['logomode'] == 'text' ? 'selected' : ''; ?>>Text</option>
+                            <option value="image" <?php echo $data['logomode'] == 'image' ? 'selected' : ''; ?>>Images</option>
                         </select>
                     </div>
                 </div>
@@ -247,25 +254,5 @@ Radius Monitor by
 </footer> <!--end::Footer-->
 </div> <!--end::App Wrapper--> <!--begin::Script--> <!--begin::Third Party Plugin(OverlayScrollbars)-->
 <script src="../../dist/js/adminlte.js"></script> <!--end::Required Plugin(AdminLTE)--><!--begin::OverlayScrollbars Configure-->
-<script>
-    function loadFormData() {
-        fetch('./data/config_print.json')
-        .then(response => response.json())
-        .then(data => {
-            document.getElementById('hsname1').value = data.hsname1;
-            document.getElementById('hsname2').value = data.hsname2;
-            document.getElementById('hsip').value = data.hsip;
-            document.getElementById('hsdomain').value = data.hsdomain;
-            document.getElementById('hscsn').value = data.hscsn;
-            document.getElementById('hslogo').value = data.hslogo;
-            document.getElementById('hsqrmode').value = data.hsqrmode;
-            document.getElementById('hsipdomain').value = data.hsipdomain;
-            document.getElementById('logomode').value = data.logomode;
-        })
-        .catch(error => console.error('Error loading JSON data:', error));
-    }
-
-    window.onload = loadFormData;
-</script>
 </body>
 </html>

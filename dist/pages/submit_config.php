@@ -1,53 +1,43 @@
 <?php
-/*
-*******************************************************************************************************************
-* Warning!!!, Tidak untuk diperjual belikan!, Cukup pakai sendiri atau share kepada orang lain secara gratis
-*******************************************************************************************************************
-* Dibuat oleh @Maizil https://t.me/maizil41
-*******************************************************************************************************************
-* © 2024 Mutiara-Net By @Maizil
-*******************************************************************************************************************
-*/
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $uploadDir = './logo/';
+
+require './data/mysqli_db.php';
+
+$hsname1 = $conn->real_escape_string($_POST['hsname1']);
+$hsname2 = $conn->real_escape_string($_POST['hsname2']);
+$hsip = $conn->real_escape_string($_POST['hsip']);
+$hsdomain = $conn->real_escape_string($_POST['hsdomain']);
+$hscsn = $conn->real_escape_string($_POST['hscsn']);
+$hsqrmode = $conn->real_escape_string($_POST['hsqrmode']);
+$hsipdomain = $conn->real_escape_string($_POST['hsipdomain']);
+$logomode = $conn->real_escape_string($_POST['logomode']);
+
+if (isset($_FILES['hslogo']) && $_FILES['hslogo']['error'] == 0) {
+    $target_dir = "logo/";
+    $target_file = $target_dir . "logo.png";
+    $imageFileType = strtolower(pathinfo($_FILES["hslogo"]["name"], PATHINFO_EXTENSION));
     
-    if (!is_dir($uploadDir)) {
-        mkdir($uploadDir, 0755, true);
-    }
-
-    if (isset($_FILES['hslogo']) && $_FILES['hslogo']['error'] === 0) {
-        $newFileName = 'logo.png';
-
-        $uploadFile = $uploadDir . $newFileName;
-
-        if (move_uploaded_file($_FILES['hslogo']['tmp_name'], $uploadFile)) {
-            $hslogo = $uploadFile;
-        } else {
-            echo "Terjadi kesalahan saat mengunggah file.";
-            exit;
-        }
-    } else {
-        $hslogo = isset($_POST['hslogo']) ? $_POST['hslogo'] : '';
-    }
-
-    $data = array(
-        'hsname1' => $_POST['hsname1'],
-        'hsname2' => $_POST['hsname2'],
-        'hsip' => $_POST['hsip'],
-        'hsdomain' => $_POST['hsdomain'],
-        'hscsn' => $_POST['hscsn'],
-        'hslogo' => $hslogo, // Path file logo yang baru
-        'hsqrmode' => $_POST['hsqrmode'],
-        'hsipdomain' => $_POST['hsipdomain'],
-        'logomode' => $_POST['logomode']
-    );
-
-    $json_data = json_encode($data, JSON_PRETTY_PRINT);
-
-    if (file_put_contents('./data/config_print.json', $json_data)) {
-        echo "<script>window.location.href = 'print_setting.php';</script>";
-    } else {
-        echo "<script>window.location.href = 'print_setting.php';</script>";
+    $check = getimagesize($_FILES["hslogo"]["tmp_name"]);
+    if ($check !== false) {
+        move_uploaded_file($_FILES["hslogo"]["tmp_name"], $target_file);
     }
 }
+
+$sql = "UPDATE print_config SET 
+    hsname1 = '$hsname1', 
+    hsname2 = '$hsname2', 
+    hsip = '$hsip', 
+    hsdomain = '$hsdomain', 
+    hscsn = '$hscsn', 
+    hsqrmode = '$hsqrmode', 
+    hsipdomain = '$hsipdomain', 
+    logomode = '$logomode' 
+    WHERE id = 1";
+
+if ($conn->query($sql) === TRUE) {
+    echo "<script>window.location.href = 'print_setting.php';</script>";
+} else {
+    echo "<script>window.location.href = 'print_setting.php';</script>";
+}
+
+$conn->close();
 ?>
