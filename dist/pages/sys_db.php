@@ -221,7 +221,7 @@ foreach ($log as $line) {
                                 <li class="nav-item"> <a href="./client_tester.php" class="nav-link"> <i class="nav-icon bi ep--connection"></i>
                                         <p>Client Tester</p>
                                     </a> </li>
-                                <li class="nav-item"> <a href="./php_admin.php" class="nav-link"> <i class="nav-icon bi phpmyadmin"></i>
+                                <li class="nav-item"> <a href="../../../phpmyadmin" target="_blank" class="nav-link"><i class="nav-icon bi phpmyadmin"></i>
                                         <p>Php Admin</p>
                                     </a> </li>
                                 </ul>
