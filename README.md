@@ -28,6 +28,7 @@ Features
 - Income Calculation
 - Database Restore & Backup
 - QRCode Tickets support
+- WhatsApp Bot Integration `(coming soon)`
 
 Credit
 ---
