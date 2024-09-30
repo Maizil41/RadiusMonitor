@@ -29,6 +29,7 @@ Features
 - Database Restore & Backup
 - QRCode Tickets support
 - WhatsApp Bot Integration `(coming soon)`
+- PPPOE Management `(coming soon)`
 
 Credit
 ---
