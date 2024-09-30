@@ -19,7 +19,7 @@ Packages Needed
 Features
 ---
 - Add, Edit & Remove Plans
-- Add & Remove Bandwidth
+- Add, Edit & Remove Bandwidth
 - Add & Remove Users
 - Add & Remove Batch
 - Mac Binding Support
