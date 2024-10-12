@@ -8,11 +8,10 @@
 * © 2024 Mutiara-Net By @Maizil
 *******************************************************************************************************************
 */
-?>
-<?php
+
 require '../data/mysqli_db.php';
 
-$sql_bw = "SELECT DISTINCT name, rate_down, rate_up FROM bandwidth";
+$sql_bw = "SELECT DISTINCT id, name, rate_down, rate_up FROM bandwidth";
 $result_bw = $conn->query($sql_bw);
 
 if (!$result_bw) {
@@ -25,6 +24,7 @@ $options['data'] = array();
 if ($result_bw->num_rows > 0) {
     while($row = $result_bw->fetch_assoc()) {
         $options['data'][] = array(
+            'bw_id' => $row['id'],
             'bw_name' => $row['name'],
             'rate_down' => $row['rate_down'],
             'rate_up' => $row['rate_up']
@@ -35,6 +35,5 @@ if ($result_bw->num_rows > 0) {
 $conn->close();
 
 header('Content-Type: application/json');
-
 echo json_encode($options);
 ?>

@@ -163,6 +163,19 @@ require './auth.php';
                         <input type="text" class="form-control" id="planName" name="planName" required>
                     </div>
                 </div>
+                
+                <div class="form-group">
+                    <label for="planCode" class="col-md-2 control-label">Plan Code</label>
+                    <div class="col-md-2">
+                        <input type="text" class="form-control" id="planCode" name="planCode" maxlength='6' required>
+                    </div>
+                
+                    <label for="idleTimeout" class="col-md-2 control-label">Idle Timeout</label>
+                    <div class="col-md-2">
+                        <input type="number" class="form-control" id="idleTimeout" name="idleTimeout" min="0">
+                    </div>
+                </div>
+                
                 <div class="form-group">
                     <label class="col-md-2 control-label">Plan Type</label>
                     <div class="col-md-10">
@@ -217,9 +230,9 @@ require './auth.php';
                 </div>
                 
                 <div class="form-group">
-                    <label for="bw_name" class="col-md-2 control-label">Bandwidth</label>
+                    <label for="bw_id" class="col-md-2 control-label">Bandwidth</label>
                     <div class="col-md-6">
-                        <select id="bw_name" name="bw_name" class="form-select">
+                        <select id="bw_id" name="bw_id" class="form-select">
                             <option value="">Select Bandwidth...</option>
                         </select>
                     </div>
@@ -230,7 +243,7 @@ require './auth.php';
                     <div class="col-md-6">
                         <div class="input-group">
                             <span class="input-group-addon">Rp.</span>
-                            <input type="number" id="planCost" class="form-control" name="planCost" min="0" required>
+                            <input type="number" id="planCost" class="form-control" name="planCost" value="0" min="0" required>
                         </div>
                     </div>
                 </div>
@@ -295,7 +308,6 @@ Radius Monitor by
             window.location.href = 'add_plan.php';
         }
 
-        // Menampilkan popup berdasarkan parameter URL
         window.onload = function() {
             const urlParams = new URLSearchParams(window.location.search);
             if (urlParams.has('error')) {
@@ -309,25 +321,25 @@ document.addEventListener('DOMContentLoaded', function() {
     fetch('api/bandwidth.php')
         .then(response => response.json())
         .then(data => {
-            let bwDropdown = document.getElementById('bw_name'); 
+            let bwDropdown = document.getElementById('bw_id'); 
 
             if (Array.isArray(data.data)) {
                 data.data.forEach(item => {
                     let option = document.createElement('option');
-                    option.value = item.bw_name; // Misalkan 'bw_name' adalah nilai yang unik
-                    option.textContent = item.bw_name; // Tampilkan nama bandwidth di dropdown
+                    option.value = item.bw_id;
+                    option.textContent = item.bw_name;
                     bwDropdown.appendChild(option);
                 });
 
                 bwDropdown.addEventListener('change', function() {
                     let selectedBw = bwDropdown.value;
 
-                    let selectedItem = data.data.find(item => item.bw_name === selectedBw);
+                    let selectedItem = data.data.find(item => item.bw_id === selectedBw);
 
                     if (selectedItem) {
-                        // Set nilai ke hidden input
                         document.getElementById('rate_down').value = selectedItem.rate_down || '';
                         document.getElementById('rate_up').value = selectedItem.rate_up || '';
+                        document.getElementById('bw_name').value = selectedItem.bw_name || '';
                     }
                 });
             } else {
@@ -341,7 +353,7 @@ document.addEventListener('DOMContentLoaded', function() {
 document.addEventListener("DOMContentLoaded", function() {
     function handlePlanTypeChange() {
         var planType = document.querySelector('input[name="typebp"]:checked');
-        if (!planType) return; // Cek jika ada elemen yang dipilih
+        if (!planType) return;
 
         var planTypeValue = planType.value;
         var limitTypeSection = document.getElementById('Type');
@@ -352,7 +364,7 @@ document.addEventListener("DOMContentLoaded", function() {
             limitTypeSection.style.display = 'block';
 
             var limitType = document.querySelector('input[name="limit_type"]:checked');
-            if (!limitType) return; // Cek jika ada elemen yang dipilih
+            if (!limitType) return;
 
             var limitTypeValue = limitType.value;
 
@@ -373,7 +385,6 @@ document.addEventListener("DOMContentLoaded", function() {
         }
     }
 
-    // Tambahkan event listener untuk radio buttons
     document.querySelectorAll('input[name="typebp"]').forEach(function(radio) {
         radio.addEventListener('change', handlePlanTypeChange);
     });
@@ -382,9 +393,8 @@ document.addEventListener("DOMContentLoaded", function() {
         radio.addEventListener('change', handlePlanTypeChange);
     });
 
-    handlePlanTypeChange(); // Panggil fungsi ini sekali saat halaman dimuat untuk mengatur tampilan awal
+    handlePlanTypeChange();
 
-    // Event listener untuk input dan select
     document.getElementById('planTimeBankInput').addEventListener('input', function() {
         calculatePlanBank();
     });
@@ -416,23 +426,22 @@ document.addEventListener("DOMContentLoaded", function() {
 
         if (isNaN(timeValue)) {
             console.log('Invalid input for planTimeBankInput:', timeValue);
-            return; // Stop execution if input is not valid
+            return;
         }
 
         if (timeUnit === "M") {
-            convertedValue = timeValue * 60; // Mengkonversi menit ke detik
+            convertedValue = timeValue * 60;
         } else if (timeUnit === "H") {
-            convertedValue = timeValue * 3600; // Mengkonversi jam ke detik
+            convertedValue = timeValue * 3600;
         } else if (timeUnit === "D") {
-            convertedValue = timeValue * 86400; // Mengkonversi hari ke detik
+            convertedValue = timeValue * 86400;
         } else {
             console.log('Invalid time unit for planTimeBankSelect:', timeUnit);
             return;
         }
 
-        // Set the calculated value to the hidden input
         document.getElementById('planTimeBank').value = convertedValue;
-        console.log('planTimeBank value set to:', convertedValue); // Debugging line
+        console.log('planTimeBank value set to:', convertedValue);
     }
 
     function calculateProfileBank() {
@@ -442,23 +451,22 @@ document.addEventListener("DOMContentLoaded", function() {
 
         if (isNaN(timeValue)) {
             console.log('Invalid input for profileTimeBankInput:', timeValue);
-            return; // Stop execution if input is not valid
+            return;
         }
 
         if (timeUnit === "M") {
-            convertedValue = timeValue * 60; // Mengkonversi menit ke detik
+            convertedValue = timeValue * 60;
         } else if (timeUnit === "H") {
-            convertedValue = timeValue * 3600; // Mengkonversi jam ke detik
+            convertedValue = timeValue * 3600;
         } else if (timeUnit === "D") {
-            convertedValue = timeValue * 86400; // Mengkonversi hari ke detik
+            convertedValue = timeValue * 86400;
         } else {
             console.log('Invalid time unit for profileTimeBankSelect:', timeUnit);
             return;
         }
 
-        // Set the calculated value to the hidden input
         document.getElementById('profileTimeBank').value = convertedValue;
-        console.log('profileTimeBank value set to:', convertedValue); // Debugging line
+        console.log('profileTimeBank value set to:', convertedValue);
     }
 
     function calculateDataLimit() {
@@ -468,21 +476,20 @@ document.addEventListener("DOMContentLoaded", function() {
 
         if (isNaN(dataValue)) {
             console.log('Invalid input for data_limit:', dataValue);
-            return; // Stop execution if input is not valid
+            return;
         }
 
         if (dataUnit === "MB") {
-            convertedValue = dataValue * 1048576; // Mengkonversi MB ke byte (1 MB = 1048576 bytes)
+            convertedValue = dataValue * 1048576;
         } else if (dataUnit === "GB") {
-            convertedValue = dataValue * 1073741824; // Mengkonversi GB ke byte (1 GB = 1073741824 bytes)
+            convertedValue = dataValue * 1073741824;
         } else {
             console.log('Invalid data unit for data_unit:', dataUnit);
             return;
         }
 
-        // Set the calculated value to the hidden input
         document.getElementById('dataLimit').value = convertedValue;
-        console.log('dataLimit value set to:', convertedValue); // Debugging line
+        console.log('dataLimit value set to:', convertedValue);
     }
 
 });
@@ -492,32 +499,31 @@ require './data/pdo_db.php';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['addbillplans']) && $_POST['addbillplans'] === 'top') {
     try {
-        // Mendapatkan koneksi database
         $pdo = get_db_connection();
         if (!$pdo) {
             throw new Exception('Database connection failed');
         }
         
-        // Mulai transaksi
         $pdo->beginTransaction();
 
-        // Ambil data dari form
         $planName = isset($_POST['planName']) ? trim($_POST['planName']) : '';
+        $planCode = isset($_POST['planCode']) ? trim($_POST['planCode']) : '';
         $planCost = isset($_POST['planCost']) ? trim($_POST['planCost']) : '';
         $planTimeBank = isset($_POST['planTimeBank']) ? trim($_POST['planTimeBank']) : '';
+        $timeout = isset($_POST['idleTimeout']) ? trim($_POST['idleTimeout']) : '';
 
         $durasi = isset($_POST['profileTimeBank']) ? trim($_POST['profileTimeBank']) : '';
         $shared = isset($_POST['shared']) ? trim($_POST['shared']) : '';
         $down = isset($_POST['rate_down']) ? trim($_POST['rate_down']) : '';
         $up = isset($_POST['rate_up']) ? trim($_POST['rate_up']) : '';
         $bw = isset($_POST['dataLimit']) ? trim($_POST['dataLimit']) : '';
-
-        // Validasi nama plan
+        $bw_name = isset($_POST['bw_name']) ? trim($_POST['bw_name']) : '';
+        $bw_id = isset($_POST['bw_id']) ? trim($_POST['bw_id']) : '';
+        
         if (empty($planName)) {
             throw new Exception('Plan name cannot be empty.');
         }
 
-        // Cek apakah nama plan sudah ada di database
         $sql = "
             SELECT COUNT(*) FROM (
                 SELECT 1 FROM billing_plans WHERE planName = ?
@@ -536,7 +542,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['addbillplans']) && $_
             exit();
         }
 
-        // Persiapkan data untuk disisipkan
         $planType = 'Prepaid';
         $planTimeType = 'Accumulative';
         $planTimeRefillCost = '';
@@ -554,27 +559,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['addbillplans']) && $_
         $planCurrency = '';
         $planGroup = '';
         $planActive = 'yes';
-        $creationby = 'administrator';
-        $updateby = 'administrator';
+        $creationby = 'radmon';
+        $updateby = 'radmon';
         $now = new DateTime();
         $timestamp = $now->format('Y-m-d H:i:s');
 
-        // Insert billing plan
         $stmt = $pdo->prepare("INSERT INTO billing_plans (
             id, planName, planId, planType, planTimeBank, planTimeType, planTimeRefillCost, 
             planBandwidthUp, planBandwidthDown, planTrafficTotal, planTrafficUp, planTrafficDown, 
             planTrafficRefillCost, planRecurring, planRecurringPeriod, planRecurringBillingSchedule, 
             planCost, planSetupCost, planTax, planCurrency, planGroup, planActive, creationdate, 
-            creationby, updatedate, updateby
+            creationby, updatedate, updateby, planCode
         ) VALUES (
             NULL, :planName, :planId, :planType, :planTimeBank, :planTimeType, :planTimeRefillCost, 
             :planBandwidthUp, :planBandwidthDown, :planTrafficTotal, :planTrafficUp, :planTrafficDown, 
             :planTrafficRefillCost, :planRecurring, :planRecurringPeriod, :planRecurringBillingSchedule, 
             :planCost, :planSetupCost, :planTax, :planCurrency, :planGroup, :planActive, :creationdate, 
-            :creationby, :updatedate, :updateby
+            :creationby, :updatedate, :updateby, :planCode
         )");
 
-        // Bind parameters
         $stmt->bindParam(':planName', $planName);
         $stmt->bindParam(':planId', $planName);
         $stmt->bindParam(':planType', $planType);
@@ -600,22 +603,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['addbillplans']) && $_
         $stmt->bindParam(':creationby', $creationby);
         $stmt->bindParam(':updatedate', $timestamp);
         $stmt->bindParam(':updateby', $updateby);
+        $stmt->bindParam(':planCode', $planCode);
 
-        // Execute the statement
         $stmt->execute();
 
-        // Insert values into radgroupcheck
         $query_check = "INSERT INTO radgroupcheck (groupname, attribute, op, value) VALUES ";
         $params_check = [];
         $values_check = [];
-
-        // Tambahkan values_check jika ada data
+        
         $values_check[] = "(?, 'Auth-Type', ':=', 'Accept')";
         $params_check[] = $planName;
-
-        // Insert Access-Period to radgroupcheck
+        
         if (!empty($planTimeBank)) {
-            // Siapkan kueri untuk memasukkan Access-Period ke radgroupcheck
             $stmt = $pdo->prepare("INSERT INTO radgroupcheck (groupname, attribute, op, value) VALUES (:planName, 'Access-Period', ':=', :planTimeBank)");
             $stmt->bindParam(':planName', $planName);
             $stmt->bindParam(':planTimeBank', $planTimeBank);
@@ -639,8 +638,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['addbillplans']) && $_
             $stmt = $pdo->prepare($query_check);
             $stmt->execute($params_check);
         }
+        
+        if (!empty($bw_id)) {
+            $query_bw = "INSERT INTO radgroupbw (groupname, bw_id) VALUES (?, ?)";
+            $stmt = $pdo->prepare($query_bw);
+            $stmt->execute([$planName, $bw_id]);
+        }
 
-        // Insert values into radgroupreply
         $query_reply = "INSERT INTO radgroupreply (groupname, attribute, op, value) VALUES ";
         $params_reply = [];
         $values_reply = [];
@@ -662,8 +666,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['addbillplans']) && $_
             $params_reply[] = $planName;
             $params_reply[] = $bw;
         }
+        
+        if (!empty($timeout)) {
+            $values_reply[] = "(?, 'Idle-Timeout', ':=', ?)";
+            $params_reply[] = $planName;
+            $params_reply[] = $timeout;
+        }
 
-        // Selalu tambahkan entri untuk 'Acct-Interim-Interval' dengan nilai 60
         $values_reply[] = "(?, 'Acct-Interim-Interval', ':=', '60')";
         $params_reply[] = $planName;
 
@@ -673,18 +682,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['addbillplans']) && $_
             $stmt->execute($params_reply);
         }
 
-        // Komit transaksi
         $pdo->commit();
 
         echo "<script>window.location.href = 'list_plan.php';</script>";
     } catch (Exception $e) {
-        // Rollback transaksi jika terjadi kesalahan
         $pdo->rollBack();
         echo "<script>window.location.href = 'list_plan.php?error=Error: " . addslashes($e->getMessage()) . "';</script>";
         exit();
     }
 }
 ?>
-
 </body>
 </html>

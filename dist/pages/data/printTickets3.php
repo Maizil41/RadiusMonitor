@@ -25,12 +25,6 @@ if ($result->num_rows > 0) {
 
 $conn->close();
 
-$configValues = array(
-    "CONFIG_DB_TBL_DALOBILLINGPLANS" => "billing_plans",
-    "CONFIG_DB_TBL_RADGROUPREPLY" => "radgroupreply",
-    "CONFIG_DB_TBL_RADGROUPCHECK" => "radgroupcheck" 
-);
-
 if (isset($_REQUEST["type"]) && $_REQUEST["type"] == "batch") {
     if (isset($_REQUEST['format'])) {
         $format = $_REQUEST['format'];
@@ -51,7 +45,7 @@ if (isset($_REQUEST["type"]) && $_REQUEST["type"] == "batch") {
         $pdo = new PDO("mysql:host=$host;dbname=$dbname;charset=utf8", $username, $password);
         $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
-        $sql = "SELECT planCost, planTimeBank, planCurrency FROM " . $configValues["CONFIG_DB_TBL_DALOBILLINGPLANS"] . " WHERE planName = :plan";
+        $sql = "SELECT planCost, planTimeBank, planCurrency FROM billing_plans WHERE planName = :plan";
         $stmt = $pdo->prepare($sql);
         $stmt->bindParam(':plan', $plan, PDO::PARAM_STR);
         $stmt->execute();
@@ -68,7 +62,7 @@ if (isset($_REQUEST["type"]) && $_REQUEST["type"] == "batch") {
         $ticketTime = '';
         }
 
-            $sqlQuota = "SELECT value FROM " . $configValues["CONFIG_DB_TBL_RADGROUPREPLY"] . " WHERE groupname = :plan AND attribute = 'ChilliSpot-Max-Total-Octets'";
+            $sqlQuota = "SELECT value FROM radgroupreply WHERE groupname = :plan AND attribute = 'ChilliSpot-Max-Total-Octets'";
             $stmtQuota = $pdo->prepare($sqlQuota);
             $stmtQuota->bindParam(':plan', $plan, PDO::PARAM_STR);
             $stmtQuota->execute();
@@ -76,7 +70,7 @@ if (isset($_REQUEST["type"]) && $_REQUEST["type"] == "batch") {
             $quotaRow = $stmtQuota->fetch(PDO::FETCH_ASSOC);
             $ticketQuota = isset($quotaRow["value"]) ? formatBytes($quotaRow["value"]) : "";
 
-            $sqlActiveTime = "SELECT value FROM " . $configValues["CONFIG_DB_TBL_RADGROUPCHECK"] . " WHERE groupname = :plan AND attribute = 'Max-All-Session'";
+            $sqlActiveTime = "SELECT value FROM radgroupcheck WHERE groupname = :plan AND attribute = 'Max-All-Session'";
             $stmtActiveTime = $pdo->prepare($sqlActiveTime);
             $stmtActiveTime->bindParam(':plan', $plan, PDO::PARAM_STR);
             $stmtActiveTime->execute();

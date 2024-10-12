@@ -159,29 +159,31 @@ $plan_id = $_GET['id'];
 
 $stmt = $conn->prepare("SELECT 
     bp.planName, 
-    bp.planType, 
+    bp.planCode, 
     bp.planTimeBank, 
     bp.planCost,
     rgc_simultaneous.value AS Simultaneous_Use,
     rgc_max.value AS Max_All_Session,
-    rgr_octets.value AS Max_Total_Octets
+    rgr_octets.value AS Max_Total_Octets,
+    rgr_timeout.value AS idle_timeout
 FROM 
     billing_plans bp
 LEFT JOIN 
     radgroupcheck rgc_simultaneous 
-ON 
-    bp.planName = rgc_simultaneous.groupname 
+    ON bp.planName = rgc_simultaneous.groupname 
     AND rgc_simultaneous.attribute = 'Simultaneous-Use'
 LEFT JOIN 
     radgroupcheck rgc_max 
-ON 
-    bp.planName = rgc_max.groupname 
+    ON bp.planName = rgc_max.groupname 
     AND rgc_max.attribute = 'Max-All-Session'
 LEFT JOIN 
     radgroupreply rgr_octets 
-ON 
-    bp.planName = rgr_octets.groupname 
+    ON bp.planName = rgr_octets.groupname 
     AND rgr_octets.attribute = 'ChilliSpot-Max-Total-Octets'
+LEFT JOIN 
+    radgroupreply rgr_timeout 
+    ON bp.planName = rgr_timeout.groupname 
+    AND rgr_timeout.attribute = 'Idle-Timeout'
 WHERE bp.id = ?");
 $stmt->bind_param("i", $plan_id);
 $stmt->execute();
@@ -204,6 +206,18 @@ if (!$plan) {
                     <div class="col-md-6">
                         <input type="text" class="form-control" id="planName_display" name="planName_display" maxlength="10" value="<?php echo htmlspecialchars($plan['planName']); ?>" disabled>
                         <input type="hidden" id="planName" name="planName" value="<?php echo htmlspecialchars($plan['planName']); ?>">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="planCode" class="col-md-2 control-label">Plan Code</label>
+                    <div class="col-md-2">
+                        <input type="text" class="form-control" id="planCode" name="planCode" maxlength="6" value="<?php echo htmlspecialchars($plan['planCode']); ?>" required>
+                    </div>
+                    
+                    <label for="idleTimeout" class="col-md-2 control-label">Idle Timeout</label>
+                    <div class="col-md-2">
+                        <input type="number" class="form-control" id="idleTimeout" name="idleTimeout" maxlength="6" value="<?php echo htmlspecialchars($plan['idle_timeout']); ?>" required>
                     </div>
                 </div>
 
@@ -261,9 +275,9 @@ if (!$plan) {
                 </div>
                 
                 <div class="form-group">
-                    <label for="bw_name" class="col-md-2 control-label">Bandwidth</label>
+                    <label for="bw_id" class="col-md-2 control-label">Bandwidth</label>
                     <div class="col-md-6">
-                        <select id="bw_name" name="bw_name" class="form-select">
+                        <select id="bw_id" name="bw_id" class="form-select">
                             <option value="">Select Bandwidth...</option>
                         </select>
                     </div>
@@ -282,7 +296,7 @@ if (!$plan) {
                 <div class="form-group">
                     <label for="shared" class="col-md-2 control-label">Shared Users</label>
                     <div class="col-md-6">
-                        <input type="number" class="form-control" id="shared" name="shared" value="<?php echo htmlspecialchars($plan['Simultaneous_Use']); ?>">
+                        <input type="number" class="form-control" id="shared" name="shared" value="<?php echo htmlspecialchars($plan['Simultaneous_Use']); ?>" min="1" required>
                     </div>
                 </div>
                 
@@ -329,25 +343,25 @@ document.addEventListener('DOMContentLoaded', function() {
     fetch('api/bandwidth.php')
         .then(response => response.json())
         .then(data => {
-            let bwDropdown = document.getElementById('bw_name'); 
+            let bwDropdown = document.getElementById('bw_id'); 
 
             if (Array.isArray(data.data)) {
                 data.data.forEach(item => {
                     let option = document.createElement('option');
-                    option.value = item.bw_name; // Misalkan 'bw_name' adalah nilai yang unik
-                    option.textContent = item.bw_name; // Tampilkan nama bandwidth di dropdown
+                    option.value = item.bw_id;
+                    option.textContent = item.bw_name;
                     bwDropdown.appendChild(option);
                 });
 
                 bwDropdown.addEventListener('change', function() {
                     let selectedBw = bwDropdown.value;
 
-                    let selectedItem = data.data.find(item => item.bw_name === selectedBw);
+                    let selectedItem = data.data.find(item => item.bw_id === selectedBw);
 
                     if (selectedItem) {
-                        // Set nilai ke hidden input
                         document.getElementById('rate_down').value = selectedItem.rate_down || '';
                         document.getElementById('rate_up').value = selectedItem.rate_up || '';
+                        document.getElementById('bw_name').value = selectedItem.bw_name || '';
                     }
                 });
             } else {
@@ -361,7 +375,7 @@ document.addEventListener('DOMContentLoaded', function() {
 document.addEventListener("DOMContentLoaded", function() {
     function handlePlanTypeChange() {
         var planType = document.querySelector('input[name="typebp"]:checked');
-        if (!planType) return; // Cek jika ada elemen yang dipilih
+        if (!planType) return;
 
         var planTypeValue = planType.value;
         var limitTypeSection = document.getElementById('Type');
@@ -372,7 +386,7 @@ document.addEventListener("DOMContentLoaded", function() {
             limitTypeSection.style.display = 'block';
 
             var limitType = document.querySelector('input[name="limit_type"]:checked');
-            if (!limitType) return; // Cek jika ada elemen yang dipilih
+            if (!limitType) return;
 
             var limitTypeValue = limitType.value;
 
@@ -393,7 +407,6 @@ document.addEventListener("DOMContentLoaded", function() {
         }
     }
 
-    // Tambahkan event listener untuk radio buttons
     document.querySelectorAll('input[name="typebp"]').forEach(function(radio) {
         radio.addEventListener('change', handlePlanTypeChange);
     });
@@ -402,9 +415,8 @@ document.addEventListener("DOMContentLoaded", function() {
         radio.addEventListener('change', handlePlanTypeChange);
     });
 
-    handlePlanTypeChange(); // Panggil fungsi ini sekali saat halaman dimuat untuk mengatur tampilan awal
+    handlePlanTypeChange();
 
-    // Event listener untuk input dan select
     document.getElementById('planTimeBankInput').addEventListener('input', function() {
         calculatePlanBank();
     });
@@ -436,23 +448,22 @@ document.addEventListener("DOMContentLoaded", function() {
 
         if (isNaN(timeValue)) {
             console.log('Invalid input for planTimeBankInput:', timeValue);
-            return; // Stop execution if input is not valid
+            return;
         }
 
         if (timeUnit === "M") {
-            convertedValue = timeValue * 60; // Mengkonversi menit ke detik
+            convertedValue = timeValue * 60;
         } else if (timeUnit === "H") {
-            convertedValue = timeValue * 3600; // Mengkonversi jam ke detik
+            convertedValue = timeValue * 3600;
         } else if (timeUnit === "D") {
-            convertedValue = timeValue * 86400; // Mengkonversi hari ke detik
+            convertedValue = timeValue * 86400;
         } else {
             console.log('Invalid time unit for planTimeBankSelect:', timeUnit);
             return;
         }
 
-        // Set the calculated value to the hidden input
         document.getElementById('planTimeBank').value = convertedValue;
-        console.log('planTimeBank value set to:', convertedValue); // Debugging line
+        console.log('planTimeBank value set to:', convertedValue);
     }
 
     function calculateProfileBank() {
@@ -462,23 +473,22 @@ document.addEventListener("DOMContentLoaded", function() {
 
         if (isNaN(timeValue)) {
             console.log('Invalid input for profileTimeBankInput:', timeValue);
-            return; // Stop execution if input is not valid
+            return;
         }
 
         if (timeUnit === "M") {
-            convertedValue = timeValue * 60; // Mengkonversi menit ke detik
+            convertedValue = timeValue * 60;
         } else if (timeUnit === "H") {
-            convertedValue = timeValue * 3600; // Mengkonversi jam ke detik
+            convertedValue = timeValue * 3600;
         } else if (timeUnit === "D") {
-            convertedValue = timeValue * 86400; // Mengkonversi hari ke detik
+            convertedValue = timeValue * 86400;
         } else {
             console.log('Invalid time unit for profileTimeBankSelect:', timeUnit);
             return;
         }
 
-        // Set the calculated value to the hidden input
         document.getElementById('profileTimeBank').value = convertedValue;
-        console.log('profileTimeBank value set to:', convertedValue); // Debugging line
+        console.log('profileTimeBank value set to:', convertedValue);
     }
 
     function calculateDataLimit() {
@@ -488,21 +498,20 @@ document.addEventListener("DOMContentLoaded", function() {
 
         if (isNaN(dataValue)) {
             console.log('Invalid input for data_limit:', dataValue);
-            return; // Stop execution if input is not valid
+            return;
         }
 
         if (dataUnit === "MB") {
-            convertedValue = dataValue * 1048576; // Mengkonversi MB ke byte (1 MB = 1048576 bytes)
+            convertedValue = dataValue * 1048576;
         } else if (dataUnit === "GB") {
-            convertedValue = dataValue * 1073741824; // Mengkonversi GB ke byte (1 GB = 1073741824 bytes)
+            convertedValue = dataValue * 1073741824;
         } else {
             console.log('Invalid data unit for data_unit:', dataUnit);
             return;
         }
 
-        // Set the calculated value to the hidden input
         document.getElementById('dataLimit').value = convertedValue;
-        console.log('dataLimit value set to:', convertedValue); // Debugging line
+        console.log('dataLimit value set to:', convertedValue);
     }
 
 });

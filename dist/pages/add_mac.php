@@ -234,7 +234,6 @@ require './auth.php';
         window.location.href = 'add_mac.php';
     }
 
-    // Menampilkan popup berdasarkan parameter URL
     window.onload = function() {
         const urlParams = new URLSearchParams(window.location.search);
         if (urlParams.has('error')) {
@@ -313,10 +312,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     }
 
     if (!empty($code) && !empty($plan_name)) {
-        // Logika untuk menyimpan ke database
         try {
             $conn->begin_transaction();
-            // cek apakah username sudah ada
             $stmt = $conn->prepare("SELECT username FROM radcheck WHERE username = ?");
             $stmt->bind_param("s", $code);
             $stmt->execute();
@@ -330,7 +327,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             }
             $stmt->close();
 
-            // Logika insert data ke database
             if (isset($_POST['addUser']) && $_POST['addUser'] == 'top') {
                 $stmt = $conn->prepare("INSERT INTO radcheck (username, attribute, op, value) VALUES (?, ?, ?, ?)");
                 $stmt->bind_param("ssss", $code, $attribute, $op, $value);
@@ -363,7 +359,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 $notes = '';
                 $changeuserinfo = '0';
                 $portalloginpassword = '';
-                $creationby = 'administrator';
+                $creationby = 'radmon';
                 $stmt->execute();
                 $stmt->close();
 
@@ -396,7 +392,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 $postalinvoice = '';
                 $faxinvoice = '';
                 $emailinvoice = '';
-                $creationby = 'administrator';
+                $creationby = 'radmon';
                 $stmt->execute();
                 $stmt->close();
 

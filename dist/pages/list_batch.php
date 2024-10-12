@@ -167,19 +167,16 @@ require './auth.php';
 <?php
 require './data/mysqli_db.php';
 
-// Jumlah batch yang ditampilkan per halaman
 $limit = 7;
 $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
 $offset = ($page - 1) * $limit;
 
-// Query untuk menghitung jumlah total batch
 $sql_total = "SELECT COUNT(*) as total FROM batch_history";
 $result_total = $conn->query($sql_total);
 $row_total = $result_total->fetch_assoc();
 $total_batches = $row_total['total'];
 $total_pages = ceil($total_batches / $limit);
 
-// Query untuk menampilkan batch history terbaru dengan batasan offset dan limit
 $sql = "
 WITH UserCounts AS (
     SELECT 
@@ -354,7 +351,7 @@ function showConfirmPopup(message, form) {
     document.getElementById('confirmMessage').innerText = message;
     document.getElementById('overlay').classList.add('show');
     document.getElementById('confirmPopup').classList.add('show');
-    formToSubmit = form; // Simpan formulir yang akan dikirim
+    formToSubmit = form;
 }
 
 function closeConfirmPopup(confirmed) {
@@ -362,7 +359,7 @@ function closeConfirmPopup(confirmed) {
     document.getElementById('confirmPopup').classList.remove('show');
     if (confirmed) {
         if (formToSubmit) {
-            formToSubmit.submit(); // Kirim formulir setelah konfirmasi
+            formToSubmit.submit();
         }
     }
 }
@@ -375,10 +372,9 @@ document.getElementById('confirmNo').onclick = function() {
     closeConfirmPopup(false);
 };
 
-// Menangani event submit pada formulir
 document.querySelectorAll('form[data-confirm]').forEach(form => {
     form.onsubmit = function(event) {
-        event.preventDefault(); // Cegah pengiriman formulir standar
+        event.preventDefault();
         showConfirmPopup(
             `Apakah Anda yakin ingin menghapus batch ${form.querySelector('input[name="bh_name"]').value}?`,
             form
@@ -388,10 +384,8 @@ document.querySelectorAll('form[data-confirm]').forEach(form => {
 </script>
 
 <?php
-// Sertakan file koneksi
 require './data/pdo_db.php';
 
-// Dapatkan koneksi dari fungsi get_db_connection
 $conn = get_db_connection();
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['id']) && isset($_POST['action']) && $_POST['action'] === 'delete') {
@@ -399,14 +393,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['id']) && isset($_POST
     $response = ['success' => false, 'message' => ''];
 
     try {
-        // Mulai transaksi
         $conn->beginTransaction();
 
-        // Hapus dari tabel batch_history
         $stmt = $conn->prepare("DELETE FROM batch_history WHERE id = ?");
         $stmt->execute([$batch_id]);
 
-        // Dapatkan daftar username dari tabel userbillinfo yang memiliki batch_id yang sama
         $stmt = $conn->prepare("SELECT username FROM userbillinfo WHERE batch_id = ?");
         $stmt->execute([$batch_id]);
         $usernames = $stmt->fetchAll(PDO::FETCH_COLUMN, 0);
@@ -435,7 +426,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['id']) && isset($_POST
         echo "<script>window.location.href = 'list_batch.php';</script>";
         
     } catch (Exception $e) {
-        // Rollback transaksi jika ada error
         $conn->rollBack();
         echo "<script>window.location.href = 'list_batch.php';</script>";
     }
@@ -445,7 +435,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['id']) && isset($_POST
     exit;
 }
 
-// Jika tidak ada request POST, kode lainnya di sini
 $rows = [];
 ?>
 </body>

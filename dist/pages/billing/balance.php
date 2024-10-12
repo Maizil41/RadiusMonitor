@@ -8,7 +8,7 @@
 * © 2024 Mutiara-Net By @Maizil
 *******************************************************************************************************************
 */
-require '../auth.php';
+require './auth.php';
 ?>
 <!DOCTYPE html>
 <html lang="en"> <!--begin::Head-->
@@ -150,54 +150,49 @@ require '../auth.php';
     <button id="confirmYes">Yes</button>
     <button id="confirmNo" class="cancel">No</button>
 </div>
+
+<div id="NotifPopup" class="confirm-popup">
+    <p id="NotifMessage"></p>
+    <button id="confirmOk">OK</button>
+</div>
+
 <!-- Modal Popup -->
-<div id="chatModal" class="modal" style="display:none;">
+<div id="chatModal" class="modal">
   <div class="modal-content">
     <span class="close">&times;</span>
     <center><h2>Kirim Pesan ke <span id="chatUsername"></span></h2></center>
-    <textarea id="messageText" rows="4" cols="50" placeholder="Masukkan pesan"></textarea>
+    <textarea id="messageText" rows="4" placeholder="Masukkan pesan"></textarea>
     <br>
-    <button onclick="sendMessage()">Kirim Pesan</button>
+    <button class="modal-button" onclick="sendMessage()">Kirim</button>
   </div>
-</div>
-<!-- Config Section -->
-<div id="configSection" class="modal" style="display: none;">
-    <div class="modal-content">
-        <span class="close" onclick="closeConfig()">&times;</span>
-        <form id="configForm">
-            <label for="token">Token Bot Telegram:</label>
-            <input type="text" class="form-control" id="token" name="token" placeholder="Masukkan token baru" required>
-            <br>
-            <center><button type="submit" class="btn btn-primary">Simpan</button></center>
-        </form>
-    </div>
 </div>
 <div class="col-sm-12">
     <div class="panel panel-hovered mb20 panel-primary">
         <div class="panel-heading">
             List User Balance
-            <button type='submit' class='btn btn-primary btn-sm' onclick="showConfig()" style="float: right; margin-top: -5px;" >
-                <i class='rotating-gear'></i>
-            </button>
         </div>
-        <div class="panel-body">
-            <div class="md-whiteframe-z1 mb20 text-center" style="padding: 15px">
-    </div>
+    <div class="panel-body">
+<div class="md-whiteframe-z1 mb20 text-center" style="padding: 15px">
+</div>
 <div class="table-responsive">
 <?php
 require '../data/mysqli_db.php';
+
+function money($number) {
+    return "Rp " . number_format($number, 0, ',', '.');
+}
 
 $limit = 10;
 $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
 $offset = ($page - 1) * $limit;
 
-$sql_total = "SELECT COUNT(*) as total FROM users";
+$sql_total = "SELECT COUNT(*) as total FROM client";
 $result_total = $conn->query($sql_total);
 $row_total = $result_total->fetch_assoc();
 $total_users = $row_total['total'];
 $total_pages = ceil($total_users / $limit);
 
-$query = "SELECT id, telegram_id, username, password, balance, whatsapp_number FROM users ORDER BY username DESC LIMIT $limit OFFSET $offset";
+$query = "SELECT id, username, password, balance, whatsapp_number, telegram_id FROM client ORDER BY username DESC LIMIT $limit OFFSET $offset";
 $result = $conn->query($query);
 
 echo '<table id="datatable" class="table table-bordered table-striped table-condensed">
@@ -220,14 +215,14 @@ if ($result->num_rows > 0) {
         $password = htmlspecialchars($row["password"]);
         $telegram_id = htmlspecialchars($row["telegram_id"]);
         $whatsapp_number = htmlspecialchars($row["whatsapp_number"]);
-        $balance = htmlspecialchars($row["balance"]);
+        $balance = money($row["balance"]);
         
         echo "<tr>";
         echo "<td><center>$username</center></td>";
         echo "<td><center>$password</center></td>";
         echo "<td><center>$telegram_id</center></td>";
         echo "<td><center>$whatsapp_number</center></td>";
-        echo "<td><center>Rp $balance</center></td>";
+        echo "<td><center>$balance</center></td>";
         echo "<td><center>
             <form data-confirm action='./balance.php' method='post'>
                 <input type='hidden' name='id' value='$id'>
@@ -235,7 +230,7 @@ if ($result->num_rows > 0) {
                 <input type='hidden' name='action' value='delete'>
                 <a href='edit.php?id=$id' class='btn btn-warning btn-sm'><i class='tabler--edit'></i></a>
                 <button type='submit' class='btn btn-danger btn-sm'><i class='fa6-solid--trash-can'></i></button>
-                <button type='button' class='btn btn-success btn-sm' onclick='openChatPopup(\"$username\", \"$telegram_id\")'><i class='chat-user'></i></button>
+                <button type='button' class='btn btn-success btn-sm' onclick='openChatPopup(\"$username\", \"$whatsapp_number\")'><i class='whatsapp'></i></button>
             </form>
             </td>
         </tr>";
@@ -281,42 +276,6 @@ echo"
 <!-- Script -->
 <script src="../../../dist/js/adminlte.js"></script>
 <script>
-function showConfig() {
-    fetch('get_token.php')
-        .then(response => response.json())
-        .then(data => {
-            document.getElementById('token').value = data.token;
-            document.getElementById('configSection').style.display = 'block';
-        })
-        .catch(error => console.error('Error fetching token:', error));
-}
-
-function closeConfig() {
-    document.getElementById('configSection').style.display = 'none';
-}
-
-// Handle form submission
-document.getElementById('configForm').addEventListener('submit', function(event) {
-    event.preventDefault();
-    const token = document.getElementById('token').value;
-    
-    fetch('update_token.php', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
-        },
-        body: new URLSearchParams({ token: token }),
-    })
-    .then(response => response.json())
-    .then(data => {
-        alert('Token berhasil diperbarui.');
-        closeConfig();
-    })
-    .catch(error => console.error('Error updating token:', error));
-});
-</script>
-
-<script>
 let formToSubmit = null;
 let actionUrl = '';
 
@@ -330,10 +289,8 @@ function showConfirmPopup(message, form) {
 function closeConfirmPopup(confirmed) {
     document.getElementById('overlay').classList.remove('show');
     document.getElementById('confirmPopup').classList.remove('show');
-    if (confirmed) {
-        if (formToSubmit) {
-            formToSubmit.submit();
-        }
+    if (confirmed && formToSubmit) {
+        formToSubmit.submit();
     }
 }
 
@@ -354,12 +311,26 @@ document.querySelectorAll('form[data-confirm]').forEach(form => {
         );
     };
 });
-</script>
-<script>
-function openChatPopup(username, chatId) {
+
+function showNotifPopup(message) {
+    document.getElementById('NotifMessage').innerText = message;
+    document.getElementById('overlay').classList.add('show');
+    document.getElementById('NotifPopup').classList.add('show');
+}
+
+function closeNotifPopup() {
+    document.getElementById('overlay').classList.remove('show');
+    document.getElementById('NotifPopup').classList.remove('show');
+}
+
+document.getElementById('confirmOk').onclick = function() {
+    closeNotifPopup();
+};
+
+function openChatPopup(username, whatsapp_number) {
     document.getElementById("chatUsername").textContent = username;
     document.getElementById("chatModal").style.display = "block";
-    window.currentChatId = chatId;
+    window.currentwhatsapp_number = whatsapp_number;
 }
 
 var modal = document.getElementById("chatModal");
@@ -367,18 +338,26 @@ var span = document.getElementsByClassName("close")[0];
 
 span.onclick = function() {
   modal.style.display = "none";
+  document.getElementById("messageText").value = "";
 }
 
 window.onclick = function(event) {
   if (event.target == modal) {
     modal.style.display = "none";
+    document.getElementById("messageText").value = "";
   }
 }
 
 function sendMessage() {
     var message = document.getElementById("messageText").value;
-    var chatId = window.currentChatId;
+    var whatsapp_number = window.currentwhatsapp_number;
 
+    if (message === "") {
+        showNotifPopup("Pesan tidak boleh kosong! Silakan masukkan pesan.");
+        modal.style.display = "none";
+        return;
+    }
+    
     var xhr = new XMLHttpRequest();
     xhr.open("POST", "message.php", true);
     xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
@@ -386,15 +365,16 @@ function sendMessage() {
     xhr.onreadystatechange = function() {
         if (xhr.readyState === XMLHttpRequest.DONE) {
             if (xhr.status === 200) {
-                alert("Pesan berhasil dikirim!");
-                document.getElementById("chatModal").style.display = "none";
+                showNotifPopup("Pesan berhasil dikirim!");
+                modal.style.display = "none";
+                document.getElementById("messageText").value = "";
             } else {
-                alert("Terjadi kesalahan saat mengirim pesan.");
+                showNotifPopup("Terjadi kesalahan saat mengirim pesan.");
             }
         }
     };
 
-    var params = "chat_id=" + encodeURIComponent(chatId) + "&message=" + encodeURIComponent(message);
+    var params = "whatsapp_number=" + encodeURIComponent(whatsapp_number) + "&message=" + encodeURIComponent(message);
     xhr.send(params);
 }
 </script>
@@ -410,7 +390,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['id']) && isset($_POST
         try {
             $pdo->beginTransaction();
             
-            $stmt_billing = $pdo->prepare("DELETE FROM users WHERE id = ?");
+            $stmt_billing = $pdo->prepare("DELETE FROM client WHERE id = ?");
             $stmt_billing->execute([$id]);
             
             $pdo->commit();

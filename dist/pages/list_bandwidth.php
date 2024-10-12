@@ -165,7 +165,7 @@ $row_total = $result_total->fetch_assoc();
 $total_batches = $row_total['total'];
 $total_pages = ceil($total_batches / $limit);
 
-$sql = "SELECT name, rate_down, rate_up
+$sql = "SELECT id, name, rate_down, rate_up
 FROM bandwidth
 ORDER BY id DESC
 LIMIT $limit OFFSET $offset";
@@ -196,6 +196,7 @@ $result = $conn->query($sql);
 <?php
 if ($result->num_rows > 0) {
     while ($row = $result->fetch_assoc()) {
+        $bw_id = htmlspecialchars($row['id']);
         $bw_name = htmlspecialchars($row['name']);
         $rate_down = format_bandwidth($row['rate_down']);
         $rate_up = format_bandwidth($row['rate_up']);
@@ -208,6 +209,7 @@ if ($result->num_rows > 0) {
             <form data-confirm action='list_bandwidth.php' method='post'>
                 <input type='hidden' name='bw_name' value='$bw_name'>
                 <input type='hidden' name='action' value='delete'>
+                <a href='edit_bw.php?id=$bw_id' class='btn btn-warning btn-sm'><i class='tabler--edit'></i></a>
                 <button type='submit' class='btn btn-danger btn-sm'><i class='fa6-solid--trash-can'></i></button>
             </form>
             </td>
@@ -259,7 +261,7 @@ function showConfirmPopup(message, form) {
     document.getElementById('confirmMessage').innerText = message;
     document.getElementById('overlay').classList.add('show');
     document.getElementById('confirmPopup').classList.add('show');
-    formToSubmit = form; // Simpan formulir yang akan dikirim
+    formToSubmit = form;
 }
 
 function closeConfirmPopup(confirmed) {
@@ -267,7 +269,7 @@ function closeConfirmPopup(confirmed) {
     document.getElementById('confirmPopup').classList.remove('show');
     if (confirmed) {
         if (formToSubmit) {
-            formToSubmit.submit(); // Kirim formulir setelah konfirmasi
+            formToSubmit.submit();
         }
     }
 }
@@ -280,10 +282,9 @@ document.getElementById('confirmNo').onclick = function() {
     closeConfirmPopup(false);
 };
 
-// Menangani event submit pada formulir
 document.querySelectorAll('form[data-confirm]').forEach(form => {
     form.onsubmit = function(event) {
-        event.preventDefault(); // Cegah pengiriman formulir standar
+        event.preventDefault();
         showConfirmPopup(
             `Apakah Anda yakin ingin menghapus bandwidth ${form.querySelector('input[name="bw_name"]').value}?`,
             form
@@ -315,14 +316,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['bw_name']) && isset($
     
     if ($pdo) {
         try {
-            // Mulai transaksi
             $pdo->beginTransaction();
             
-            // Menyiapkan dan menjalankan kueri penghapusan untuk billing_plans
             $stmt_billing = $pdo->prepare("DELETE FROM bandwidth WHERE name = ?");
             $stmt_billing->execute([$bw_name]);
             
-            // Commit transaksi
             $pdo->commit();
             
             if ($stmt_billing->rowCount() > 0 || $stmt_reply->rowCount() > 0 || $stmt_check->rowCount() > 0) {
@@ -331,7 +329,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['bw_name']) && isset($
                 echo "<script>window.location.href = 'list_bandwidth.php?error=No records found with the provided ID';</script>";
             }
         } catch (PDOException $e) {
-            // Rollback transaksi jika terjadi kesalahan
             $pdo->rollBack();
             echo "<script>window.location.href = 'list_bandwidth.php?error=Error: " . addslashes($e->getMessage()) . "';</script>";
         }

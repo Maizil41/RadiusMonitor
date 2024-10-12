@@ -216,7 +216,6 @@ require './auth.php';
 <script>
     document.addEventListener('DOMContentLoaded', function() {
 
-        // Function to generate a random string
         function generateRandomString(length) {
             const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
             let result = '';
@@ -227,7 +226,6 @@ require './auth.php';
             return result;
         }
 
-        // Generate a random batch name and append it as a hidden input to the form
         const randomBatchName = generateRandomString(4);
         const form = document.querySelector('form');
         const hiddenInput = document.createElement('input');
@@ -236,13 +234,11 @@ require './auth.php';
         hiddenInput.value = randomBatchName;
         form.appendChild(hiddenInput);
 
-        // Fetch group and plan data, and populate the dropdowns
         fetch('../pages/api/radgroup.php')
             .then(response => response.json())
             .then(data => {
                 let planDropdown = document.getElementById('planBatch');
 
-                // Populate planDropdown with planNames
                 data.plans.forEach(item => {
                     let option = document.createElement('option');
                     option.value = item.planName;
@@ -257,7 +253,6 @@ require './auth.php';
 require './data/pdo_db.php';
 
 function generate_random_string($stringLength = 6, $stringType = 'number', $prefix = '') {
-    // Karakter yang akan digunakan untuk menghasilkan string acak
     $characters = '';
     
     switch ($stringType) {
@@ -274,14 +269,12 @@ function generate_random_string($stringLength = 6, $stringType = 'number', $pref
             $characters = '0123456789';
     }
 
-    // Menghasilkan string acak
     $random_string = '';
     $characters_length = strlen($characters);
     for ($i = 0; $i < $stringLength; $i++) {
         $random_string .= $characters[rand(0, $characters_length - 1)];
     }
 
-    // Menambahkan prefix jika ada
     return $prefix . $random_string;
 }
 
@@ -305,16 +298,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 throw new Exception('Database connection failed');
             }
 
-            $conn->beginTransaction(); // Memulai transaksi
+            $conn->beginTransaction();
 
             $now = new DateTime();
             $timestamp = $now->format('Y-m-d H:i:s');
 
-            // Insert batch history
             $stmt = $conn->prepare("INSERT INTO batch_history (batch_name, batch_description, hotspot_id, batch_status, creationdate, creationby) VALUES (?, ?, ?, ?, ?, ?)");
-            $stmt->execute([$batchName, $planName, '1', 'Pending', $timestamp, 'administrator']);
+            $stmt->execute([$batchName, $planName, '1', 'Pending', $timestamp, 'radmon']);
             
-            // Get batch id
             $stmt = $conn->prepare("SELECT id FROM batch_history WHERE batch_name = ?");
             $stmt->execute([$batchName]);
             $row = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -330,21 +321,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 
                 $now_formatted = $now->format('Y-m-d H:i:s');
 
-                // Insert into radcheck
                 $stmt = $conn->prepare("INSERT INTO radcheck (username, attribute, op, value) VALUES (?, ?, ?, ?)");
                 $stmt->execute([$number, 'Auth-Type', ':=', 'Accept']);
                 
-                // Insert into radusergroup
                 $stmt = $conn->prepare("INSERT INTO radusergroup (username, groupname, priority) VALUES (?, ?, ?)");
                 $stmt->execute([$number, $planName, '0']);
                 
-                // Insert into userinfo
                 $stmt = $conn->prepare("INSERT INTO userinfo (username, firstname, lastname, email, department, company, workphone, homephone, mobilephone, address, city, state, country, zip, notes, changeuserinfo, portalloginpassword, creationdate, creationby) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
-                $stmt->execute([$number, '', '', '', '', '', '', '', '', '', '', '', '', '', '', '0', '', $now_formatted, 'administrator']);
+                $stmt->execute([$number, '', '', '', '', '', '', '', '', '', '', '', '', '', '', '0', '', $now_formatted, 'radmon']);
                 
-                // Insert into userbillinfo
                 $stmt = $conn->prepare("INSERT INTO userbillinfo (username, planName, contactperson, company, email, phone, address, city, state, country, zip, paymentmethod, cash, creditcardname, creditcardnumber, creditcardverification, creditcardtype, creditcardexp, notes, changeuserbillinfo, lead, coupon, ordertaker, billstatus, postalinvoice, faxinvoice, emailinvoice, batch_id, creationdate, creationby) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
-                $stmt->execute([$number, $planName, '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '0', '', '', '', '', '', '', '', $batch_id, $now_formatted, 'administrator']);
+                $stmt->execute([$number, $planName, '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '0', '', '', '', '', '', '', '', $batch_id, $now_formatted, 'radmon']);
             }
 
             $conn->commit();

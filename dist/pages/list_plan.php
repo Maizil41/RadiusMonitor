@@ -169,29 +169,34 @@ $total_pages = ceil($total_batches / $limit);
 $sql = "SELECT 
     bp.id, 
     bp.planName, 
-    bp.planType, 
+    bp.planCode, 
     bp.planTimeBank, 
     bp.planCost,
     rgc_simultaneous.value AS Simultaneous_Use,
     rgc_max.value AS Max_All_Session,
-    rgr_octets.value AS Max_Total_Octets
+    rgr_octets.value AS Max_Total_Octets,
+    rgbw.bw_id,
+    bw.name AS bw_name
 FROM 
     billing_plans bp
 LEFT JOIN 
     radgroupcheck rgc_simultaneous 
-ON 
-    bp.planName = rgc_simultaneous.groupname 
+    ON bp.planName = rgc_simultaneous.groupname 
     AND rgc_simultaneous.attribute = 'Simultaneous-Use'
 LEFT JOIN 
     radgroupcheck rgc_max 
-ON 
-    bp.planName = rgc_max.groupname 
+    ON bp.planName = rgc_max.groupname 
     AND rgc_max.attribute = 'Max-All-Session'
 LEFT JOIN 
     radgroupreply rgr_octets 
-ON 
-    bp.planName = rgr_octets.groupname 
+    ON bp.planName = rgr_octets.groupname 
     AND rgr_octets.attribute = 'ChilliSpot-Max-Total-Octets'
+LEFT JOIN 
+    radgroupbw rgbw 
+    ON bp.planName = rgbw.groupname
+LEFT JOIN 
+    bandwidth bw
+    ON rgbw.bw_id = bw.id 
 ORDER BY 
     bp.id DESC
 LIMIT $limit OFFSET $offset";
@@ -213,12 +218,13 @@ $result = $conn->query($sql);
     <thead>
 <tr>
     <th><center>Name</th>
+    <th><center>Code</th>
     <th><center>Cost</th>
-    <th><center>Type</th>
     <th><center>Duration</th>
     <th><center>Validity</th>
     <th><center>Kuota</th>
     <th><center>Shared</th>
+    <th><center>Bandwidth</th>
     <th><center>Actions</th>
 </tr>
 </thead>
@@ -228,8 +234,9 @@ if ($result->num_rows > 0) {
     while ($row = $result->fetch_assoc()) {
         $plan_id = htmlspecialchars($row['id']);
         $plan_names = htmlspecialchars($row['planName']);
-        $plan_cost = htmlspecialchars($row['planCost']);
-        $plan_type = htmlspecialchars($row['planType']);
+        $plan_cost = money($row['planCost']);
+        $plan_code = checkCode($row['planCode']);
+        $bw_name = checkbw($row['bw_name']);
         $shared = htmlspecialchars($row['Simultaneous_Use']);
         $duration = (int)$row['Max_All_Session'];
         $validity = (int)$row['planTimeBank'];
@@ -238,12 +245,13 @@ if ($result->num_rows > 0) {
         $plan_duration = formatTime($duration);
 
         echo "<td><center>$plan_names</td>
-        <td><center>Rp $plan_cost</td>
-        <td><center>$plan_type</td>
+        <td><center>$plan_code</td>
+        <td><center>$plan_cost</td>
         <td><center>$plan_duration</td>
         <td><center>$plan_validity</td>
         <td><center>$kuota</td>
-        <td><center>$shared</td>";
+        <td><center>$shared</td>
+        <td><center>$bw_name</td>";
 
         echo "<td><center>
             <form data-confirm action='list_plan.php' method='post'>
@@ -257,7 +265,7 @@ if ($result->num_rows > 0) {
         </tr>";
     }
 } else {
-    echo "<tr><td colspan='7'><center>Tidak ada data</center></td></tr>";
+    echo "<tr><td colspan='9'><center>Tidak ada data</center></td></tr>";
 }
 echo"
     </tbody>
@@ -302,7 +310,7 @@ function showConfirmPopup(message, form) {
     document.getElementById('confirmMessage').innerText = message;
     document.getElementById('overlay').classList.add('show');
     document.getElementById('confirmPopup').classList.add('show');
-    formToSubmit = form; // Simpan formulir yang akan dikirim
+    formToSubmit = form;
 }
 
 function closeConfirmPopup(confirmed) {
@@ -310,7 +318,7 @@ function closeConfirmPopup(confirmed) {
     document.getElementById('confirmPopup').classList.remove('show');
     if (confirmed) {
         if (formToSubmit) {
-            formToSubmit.submit(); // Kirim formulir setelah konfirmasi
+            formToSubmit.submit();
         }
     }
 }
@@ -323,10 +331,9 @@ document.getElementById('confirmNo').onclick = function() {
     closeConfirmPopup(false);
 };
 
-// Menangani event submit pada formulir
 document.querySelectorAll('form[data-confirm]').forEach(form => {
     form.onsubmit = function(event) {
-        event.preventDefault(); // Cegah pengiriman formulir standar
+        event.preventDefault();
         showConfirmPopup(
             `Apakah Anda yakin ingin menghapus plan ${form.querySelector('input[name="plan_name"]').value}?`,
             form
@@ -352,51 +359,64 @@ function toxbyte($size) {
 }
 
 function formatTime($time) {
-    // Waktu dalam detik
     if ($time < 60) {
-        // Kurang dari 60 detik, bulatkan ke detik
-        return sprintf("Unlimited");
+        return sprintf("-");
     } elseif ($time < 3600) {
-        // Kurang dari 1 jam (3600 detik), bulatkan ke menit
-        $minutes = round($time / 60); // Bulatkan ke menit terdekat
+        $minutes = round($time / 60);
         return sprintf("%d minutes", $minutes);
     } elseif ($time < 86400) {
-        // Kurang dari 1 hari (86400 detik), bulatkan ke jam
-        $hours = round($time / 3600); // Bulatkan ke jam terdekat
+        $hours = round($time / 3600);
         return sprintf("%d hours", $hours);
     } else {
-        // 1 hari atau lebih, bulatkan ke hari
-        $days = round($time / 86400); // Bulatkan ke hari terdekat
+        $days = round($time / 86400);
         return sprintf("%d days", $days);
     }
+}
+
+function checkbw($bw_name) {
+    if ($bw_name == null) {
+        return sprintf("-");
+    } else {
+        return sprintf("$bw_name");
+    }
+}
+
+function checkCode($planCode) {
+    if ($planCode == null) {
+        return sprintf("-");
+    } else {
+        return sprintf("$planCode");
+    }
+}
+
+function money($number) {
+    return "Rp " . number_format($number, 0, ',', '.');
 }
 
 require './data/pdo_db.php';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['id']) && isset($_POST['action']) && $_POST['action'] === 'delete') {
     $id = intval($_POST['id']);
-    $plan_name = $_POST['plan_name']; // Ambil plan_name dari POST
+    $plan_name = $_POST['plan_name'];
     
     $pdo = get_db_connection();
     
     if ($pdo) {
         try {
-            // Mulai transaksi
             $pdo->beginTransaction();
             
-            // Menyiapkan dan menjalankan kueri penghapusan untuk billing_plans
             $stmt_billing = $pdo->prepare("DELETE FROM billing_plans WHERE id = ?");
             $stmt_billing->execute([$id]);
             
-            // Menyiapkan dan menjalankan kueri penghapusan untuk radgroupreply
             $stmt_reply = $pdo->prepare("DELETE FROM radgroupreply WHERE groupname = ?");
             $stmt_reply->execute([$plan_name]);
             
-            // Menyiapkan dan menjalankan kueri penghapusan untuk radgroupcheck
             $stmt_check = $pdo->prepare("DELETE FROM radgroupcheck WHERE groupname = ?");
             $stmt_check->execute([$plan_name]);
+
+            $stmt_check = $pdo->prepare("DELETE FROM radgroupbw WHERE groupname = ?");
+            $stmt_check->execute([$plan_name]);
             
-            // Commit transaksi
             $pdo->commit();
             
             if ($stmt_billing->rowCount() > 0 || $stmt_reply->rowCount() > 0 || $stmt_check->rowCount() > 0) {
@@ -405,7 +425,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['id']) && isset($_POST
                 echo "<script>window.location.href = 'list_plan.php?error=No records found with the provided ID';</script>";
             }
         } catch (PDOException $e) {
-            // Rollback transaksi jika terjadi kesalahan
             $pdo->rollBack();
             echo "<script>window.location.href = 'list_plan.php?error=Error: " . addslashes($e->getMessage()) . "';</script>";
         }

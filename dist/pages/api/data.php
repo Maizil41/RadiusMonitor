@@ -18,9 +18,9 @@ require '../data/mysqli_db.php';
 function convertBytes($bytes) {
     if ($bytes < 1024) {
         return ['value' => $bytes, 'unit' => 'bytes'];
-    } elseif ($bytes < 1048576) { // 1024 * 1024
+    } elseif ($bytes < 1048576) {
         return ['value' => $bytes / 1024, 'unit' => 'KB'];
-    } elseif ($bytes < 1073741824) { // 1024 * 1024 * 1024
+    } elseif ($bytes < 1073741824) {
         return ['value' => $bytes / 1048576, 'unit' => 'MB'];
     } else {
         return ['value' => $bytes / 1073741824, 'unit' => 'GB'];

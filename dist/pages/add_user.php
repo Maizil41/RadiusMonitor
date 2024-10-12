@@ -165,11 +165,28 @@ require './auth.php';
                         </select>
                     </div>
                 </div>
-                
+
                 <div class="form-group">
-                    <label for="usernameTop" class="col-md-2 control-label">Username</label>
+                    <label for="usernameTop" class="col-md-2 control-label">Voucher Code</label>
                     <div class="col-md-6">
-                        <input type="text" id="usernameTop" class="form-control" name="username" placeholder="Username" maxlength="12" required>
+                        <input type="text" id="usernameTop" class="form-control" name="username" placeholder="Voucher" maxlength="12" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="clientName" class="col-md-2 control-label">Client Name</label>
+                    <div class="col-md-6">
+                        <input type="text" id="clientName" class="form-control" name="clientName" placeholder="Name (Opsional)" maxlength="12">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="Whatsapp_number" class="col-md-2 control-label">Client Phone</label>
+                    <div class="col-md-6">
+                        <div class="input-group">
+                            <span class="input-group-addon">62</span>
+                            <input type="number" id="Whatsapp_number" class="form-control" name="Whatsapp_number">
+                        </div>
                     </div>
                 </div>
                 
@@ -223,7 +240,6 @@ require './auth.php';
             window.location.href = 'add_user.php';
         }
 
-        // Menampilkan popup berdasarkan parameter URL
         window.onload = function() {
             const urlParams = new URLSearchParams(window.location.search);
             if (urlParams.has('error')) {
@@ -236,14 +252,13 @@ require './auth.php';
 require './data/mysqli_db.php';
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    // Mengambil data dari form
     $code = $_POST['username'];
     $plan_name = isset($_POST['planName']) ? trim($_POST['planName']) : '';
+    $client_name = isset($_POST['clientName']) ? trim($_POST['clientName']) : '';
+    $client_phone = isset($_POST['Whatsapp_number']) && !empty(trim($_POST['Whatsapp_number'])) ? '62' . trim($_POST['Whatsapp_number']) : '';
     $now = date('Y-m-d H:i:s');
 
-    // Memeriksa data yang diperlukan
-    if (!empty($code) && !empty($plan_name)) {
-        // Memeriksa apakah username sudah terdaftar
+    if (!empty($code)) {
         $check_stmt = $conn->prepare("SELECT COUNT(*) FROM radcheck WHERE username = ?");
         $check_stmt->bind_param("s", $code);
         $check_stmt->execute();
@@ -252,15 +267,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $check_stmt->close();
 
         if ($count > 0) {
-            echo "<script>window.location.href = 'add_user.php?error=Username sudah terdaftar di database.';</script>";
+            echo "<script>window.location.href = 'add_user.php?error=Kode voucher sudah terdaftar di database.';</script>";
         } else {
             try {
                 
                 $conn->begin_transaction();
 
-                // Menjalankan query berdasarkan tombol yang diklik
                 if (isset($_POST['addUser']) && $_POST['addUser'] == 'top') {
-                    // Query pertama
                     $stmt = $conn->prepare("INSERT INTO radcheck (username, attribute, op, value) VALUES (?, ?, ?, ?)");
                     $stmt->bind_param("ssss", $code, $attribute, $op, $value);
                     $attribute = "Auth-Type";
@@ -269,24 +282,20 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     $stmt->execute();
                     $stmt->close();
 
-                    // Query kedua
                     $stmt = $conn->prepare("INSERT INTO radusergroup (username, groupname, priority) VALUES (?, ?, ?)");
                     $stmt->bind_param("sss", $code, $plan_name, $priority);
                     $priority = "0";
                     $stmt->execute();
                     $stmt->close();
 
-                    // Query ketiga
                     $stmt = $conn->prepare("INSERT INTO userinfo (username, firstname, lastname, email, department, company, workphone, homephone, mobilephone, address, city, state, country, zip, notes, changeuserinfo, portalloginpassword, creationdate, creationby) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
-                    $stmt->bind_param("sssssssssssssssssss", $code, $firstname, $lastname, $email, $department, $company, $workphone, $homephone, $mobilephone, $address, $city, $state, $country, $zip, $notes, $changeuserinfo, $portalloginpassword, $now, $creationby);
-                    $firstname = '';
+                    $stmt->bind_param("sssssssssssssssssss", $code, $client_name, $lastname, $email, $department, $company, $workphone, $homephone, $client_phone, $address, $city, $state, $country, $zip, $notes, $changeuserinfo, $portalloginpassword, $now, $creationby);
                     $lastname = '';
                     $email = '';
                     $department = '';
                     $company = '';
                     $workphone = '';
                     $homephone = '';
-                    $mobilephone = '';
                     $address = '';
                     $city = '';
                     $state = '';
@@ -295,17 +304,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     $notes = '';
                     $changeuserinfo = '0';
                     $portalloginpassword = '';
-                    $creationby = 'administrator';
+                    $creationby = 'radmon';
                     $stmt->execute();
                     $stmt->close();
 
-                    // Query keempat
                     $stmt = $conn->prepare("INSERT INTO userbillinfo (username, planName, contactperson, company, email, phone, address, city, state, country, zip, paymentmethod, cash, creditcardname, creditcardnumber, creditcardverification, creditcardtype, creditcardexp, notes, changeuserbillinfo, lead, coupon, ordertaker, billstatus, nextinvoicedue, billdue, postalinvoice, faxinvoice, emailinvoice, creationdate, creationby) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
-                    $stmt->bind_param("sssssssssssssssssssssssssssssss", $code, $plan_name, $contactperson, $company, $email, $phone, $address, $city, $state, $country, $zip, $paymentmethod, $cash, $creditcardname, $creditcardnumber, $creditcardverification, $creditcardtype, $creditcardexp, $notes, $changeuserbillinfo, $lead, $coupon, $ordertaker, $billstatus, $nextinvoicedue, $billdue, $postalinvoice, $faxinvoice, $emailinvoice, $now, $creationby);
-                    $contactperson = '';
+                    $stmt->bind_param("sssssssssssssssssssssssssssssss", $code, $plan_name, $client_name, $company, $email, $client_phone, $address, $city, $state, $country, $zip, $paymentmethod, $cash, $creditcardname, $creditcardnumber, $creditcardverification, $creditcardtype, $creditcardexp, $notes, $changeuserbillinfo, $lead, $coupon, $ordertaker, $billstatus, $nextinvoicedue, $billdue, $postalinvoice, $faxinvoice, $emailinvoice, $now, $creationby);
                     $company = '';
                     $email = '';
-                    $phone = '';
                     $address = '';
                     $city = '';
                     $state = '';
@@ -329,7 +335,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     $postalinvoice = '';
                     $faxinvoice = '';
                     $emailinvoice = '';
-                    $creationby = 'administrator';
+                    $creationby = 'radmon';
                     $stmt->execute();
                     $stmt->close();
 

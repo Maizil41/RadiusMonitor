@@ -219,7 +219,6 @@ Radius Monitor by
         window.location.href = 'add_bandwidth.php';
     }
 
-    // Menampilkan popup berdasarkan parameter URL
     window.onload = function() {
         const urlParams = new URLSearchParams(window.location.search);
         if (urlParams.has('error')) {
@@ -230,16 +229,13 @@ Radius Monitor by
 </script>
 <?php
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    // Ambil data dari formulir dengan validasi
     $name = isset($_POST['name']) ? trim($_POST['name']) : '';
     
-    // Ganti koma dengan titik dan konversi ke float
     $rate_down = isset($_POST['rate_down']) ? floatval(str_replace(',', '.', $_POST['rate_down'])) : 0;
     $rate_down_unit = isset($_POST['rate_down_unit']) ? $_POST['rate_down_unit'] : 'Kbps';
     $rate_up = isset($_POST['rate_up']) ? floatval(str_replace(',', '.', $_POST['rate_up'])) : 0;
     $rate_up_unit = isset($_POST['rate_up_unit']) ? $_POST['rate_up_unit'] : 'Kbps';
 
-    // Konversi rate_down dan rate_up ke bit per detik (bps)
     if ($rate_down_unit === 'Kbps') {
         $rate_down_bps = $rate_down * 1000;
     } elseif ($rate_down_unit === 'Mbps') {
@@ -256,7 +252,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $rate_up_bps = $rate_up;
     }
 
-    // Tanggal pembuatan (creation_date)
     $creation_date = date('Y-m-d H:i:s');
 
     require './data/mysqli_db.php';
@@ -281,7 +276,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit();
     }
 
-    // Insert data ke database
     $insert = "INSERT INTO bandwidth (name, rate_down, rate_up, creation_date) VALUES (?, ?, ?, ?)";
     $stmt = $conn->prepare($insert);
     if ($stmt) {

@@ -157,7 +157,7 @@ if (!isset($_GET['id'])) {
 
 $id = $_GET['id'];
 
-$stmt = $conn->prepare("SELECT telegram_id, username, password, balance, whatsapp_number FROM users WHERE id = ?");
+$stmt = $conn->prepare("SELECT username, password, balance, whatsapp_number, telegram_id FROM client WHERE id = ?");
 $stmt->bind_param("i", $id);
 $stmt->execute();
 $result = $stmt->get_result();
@@ -167,6 +167,8 @@ if (!$uid) {
     echo "<script>alert('User not found!'); window.location.href = 'balance.php';</script>";
     exit();
 }
+
+$client_phone = isset($uid['whatsapp_number']) ? preg_replace('/^62/', '', trim($uid['whatsapp_number'])) : '';
 
 ?>
 <div class="col-sm-12 col-md-12">
@@ -210,7 +212,10 @@ if (!$uid) {
                 <div class="form-group">
                     <label for="whatsapp" class="col-md-2 control-label">Whatsapp</label>
                     <div class="col-md-6">
-                        <input type="text" class="form-control" id="whatsapp" name="whatsapp" value="<?php echo htmlspecialchars($uid['whatsapp_number']); ?>" oninput="if(this.value.length > 17) this.value = this.value.slice(0,17);" pattern="[0-9\-]+" title="Masukkan nomor yang valid">
+                        <div class="input-group">
+                            <span class="input-group-addon">62</span>
+                            <input type="text" class="form-control" id="whatsapp" name="whatsapp" value="<?php echo htmlspecialchars($client_phone); ?>" oninput="if(this.value.length > 17) this.value = this.value.slice(0,17);" pattern="[0-9\-]+" title="Masukkan nomor yang valid">
+                        </div>
                     </div>
                 </div>
                 

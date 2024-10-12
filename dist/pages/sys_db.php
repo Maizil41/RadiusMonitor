@@ -77,7 +77,6 @@ if (file_exists($logFile)) {
     if ($log === false) {
         $log = ['Tidak dapat membaca log.'];
     } else {
-        // Mengambil baris terakhir $limit
         $log = array_slice($log, -$limit);
     }
 } else {

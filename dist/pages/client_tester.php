@@ -149,22 +149,17 @@ require './auth.php';
 </div> <!--end::Row-->
 </div> <!--end::Container-->
 <?php
-// Definisikan variabel dan set ke nilai kosong
 $username = $password = $address = $port = $secret = "";
 $output = "";
 
-// Proses form saat disubmit
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
-    // Validasi input
     $username = isset($_POST['username']) ? trim($_POST['username']) : '';
     $password = isset($_POST['password']) ? trim($_POST['password']) : '';
     $address = isset($_POST['address']) ? trim($_POST['address']) : '';
     $port = isset($_POST['port']) ? trim($_POST['port']) : '';
     $secret = isset($_POST['secret']) ? trim($_POST['secret']) : '';
 
-    // Jalankan perintah radtest jika semua input valid
     if (!empty($username) && !empty($password) && !empty($address) && !empty($port) && !empty($secret)) {
-        // Escape command to prevent shell injection
         $command = escapeshellcmd("radtest $username $password $address $port $secret");
         $output = shell_exec($command);
     } else {
@@ -192,24 +187,24 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                 <div class="form-group">
                     <label class="col-md-2 control-label" for="address">Nas IP Address</label>
                     <div class="col-md-6">
-                        <input type="text" id="address" name="address" value="<?php echo htmlspecialchars($address); ?>" placeholder="127.0.0.1" class="form-control" required>
+                        <input type="text" id="address" name="address" value="127.0.0.1" placeholder="127.0.0.1" class="form-control" required>
                     </div>
                 </div>
                 <div class="form-group">
                     <label class="col-md-2 control-label" for="port">Nas Port</label>
                     <div class="col-md-6">
-                        <input type="text" id="port" name="port" value="<?php echo htmlspecialchars($port); ?>" placeholder="1812" class="form-control" required>
+                        <input type="text" id="port" name="port" value="1812" placeholder="1812" class="form-control" required>
                     </div>
                 </div>
                 <div class="form-group">
                     <label class="col-md-2 control-label" for="secret">Nas Secret</label>
                     <div class="col-md-6">
-                        <input type="text" id="secret" name="secret" value="<?php echo htmlspecialchars($secret); ?>" placeholder="testing123" class="form-control" required>
+                        <input type="text" id="secret" name="secret" value="testing123" placeholder="testing123" class="form-control" required>
                     </div>
                 </div>
                 <div class="form-group">
                     <div class="col-lg-offset-2 col-lg-10">
-                        <button class="btn btn-success waves-effect waves-light" type="submit" name="submit" value="Submit">Test User Connection</button>
+                        <button class="btn btn-primary" type="submit" name="submit" value="Submit">Test User Connection</button>
                     </div>
                 </div>
             </div>

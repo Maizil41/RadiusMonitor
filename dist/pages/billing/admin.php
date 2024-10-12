@@ -8,7 +8,7 @@
 * © 2024 Mutiara-Net By @Maizil
 *******************************************************************************************************************
 */
-require '../auth.php';
+require './auth.php';
 ?>
 <!DOCTYPE html>
 <html lang="en"> <!--begin::Head-->
@@ -165,24 +165,35 @@ require '../auth.php';
 <?php
 require '../data/mysqli_db.php';
 
+function money($number) {
+    return "Rp " . number_format($number, 0, ',', '.');
+}
+
 $limit = 10;
 $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
 $offset = ($page - 1) * $limit;
 
-$sql_total = "SELECT COUNT(*) as total FROM topup_requests WHERE status = 'pending' ";
+$sql_total = "SELECT COUNT(*) as total FROM topup WHERE status = 'pending' ";
 $result_total = $conn->query($sql_total);
 $row_total = $result_total->fetch_assoc();
 $total_request = $row_total['total'];
 $total_pages = ceil($total_request / $limit);
 
-$query = "SELECT username, amount, created_at, status FROM topup_requests WHERE status = 'pending' ORDER BY created_at DESC LIMIT $limit OFFSET $offset";
+$query = "SELECT t.id, t.user_id, t.username, t.amount, t.status, t.date, c.whatsapp_number
+FROM topup t
+JOIN client c ON c.id = t.user_id
+WHERE t.status = 'pending'
+ORDER BY t.date
+DESC LIMIT $limit OFFSET $offset";
 $result = $conn->query($query);
 
 echo '<table id="datatable" class="table table-bordered table-striped table-condensed">
         <thead>
             <tr>
+                <th><center>Topup ID</center></th>
                 <th><center>Username</center></th>
-                <th><center>Top Up</center></th>
+                <th><center>Whatsapp</center></th>
+                <th><center>Amount</center></th>
                 <th><center>Date</center></th>
                 <th><center>Action</center></th>
             </tr>
@@ -192,17 +203,19 @@ echo '<table id="datatable" class="table table-bordered table-striped table-cond
 if ($result->num_rows > 0) {
     while ($row = $result->fetch_assoc()) {
         echo "<tr>";
+        echo "<td><center>" . htmlspecialchars($row["id"]) . "</center></td>";
         echo "<td><center>" . htmlspecialchars($row["username"]) . "</center></td>";
-        echo "<td><center>Rp " . number_format($row["amount"]) . "</center></td>";
-        echo "<td><center>" . htmlspecialchars($row["created_at"]) . "</center></td>";
+        echo "<td><center>" . htmlspecialchars($row["whatsapp_number"]) . "</center></td>";
+        echo "<td><center>" . money($row["amount"]) . "</center></td>";
+        echo "<td><center>" . htmlspecialchars($row["date"]) . "</center></td>";
         echo "<td><center>
-            <button class='btn btn-success btn-sm accept-button' data-username='" . htmlspecialchars($row['username']) . "' data-amount='" . htmlspecialchars($row['amount']) . "'><i class='tick-mark'></i></button>
-            <button class='btn btn-danger btn-sm reject-button' data-username='" . htmlspecialchars($row['username']) . "' data-amount='" . htmlspecialchars($row['amount']) . "'><i class='cross-mark'></i></button>
+            <button class='btn btn-success btn-sm accept-button' data-id='" . htmlspecialchars($row['id']) . "' data-username='" . htmlspecialchars($row['username']) . "' data-whatsapp='" . htmlspecialchars($row['whatsapp_number']) . "' data-amount='" . htmlspecialchars($row['amount']) . "'><i class='tick-mark'></i></button>
+            <button class='btn btn-danger btn-sm reject-button' data-id='" . htmlspecialchars($row['id']) . "' data-username='" . htmlspecialchars($row['username']) . "' data-whatsapp='" . htmlspecialchars($row['whatsapp_number']) . "' data-amount='" . htmlspecialchars($row['amount']) . "'><i class='cross-mark'></i></button>
             </center></td>";
         echo "</tr>";
     }
 } else {
-    echo "<tr><td colspan='4'><center>Tidak ada data</center></td></tr>";
+    echo "<tr><td colspan='6'><center>Tidak ada data</center></td></tr>";
 }
 echo '</tbody></table>';
 
@@ -244,11 +257,11 @@ echo"
 <script>
 let formToSubmit = null;
 
-function showConfirmPopup(message, action, username, amount) {
+function showConfirmPopup(message, action, id, username, whatsapp_number, amount) {
     document.getElementById('confirmMessage').innerText = message;
     document.getElementById('overlay').classList.add('show');
     document.getElementById('confirmPopup').classList.add('show');
-    formToSubmit = { action, username, amount };
+    formToSubmit = { action, id, username, whatsapp_number, amount };
 }
 
 function closeConfirmPopup(confirmed) {
@@ -265,11 +278,23 @@ function closeConfirmPopup(confirmed) {
         actionField.value = formToSubmit.action;
         form.appendChild(actionField);
         
+        let idField = document.createElement('input');
+        idField.type = 'hidden';
+        idField.name = 'id';
+        idField.value = formToSubmit.id;
+        form.appendChild(idField);
+        
         let usernameField = document.createElement('input');
         usernameField.type = 'hidden';
         usernameField.name = 'username';
         usernameField.value = formToSubmit.username;
         form.appendChild(usernameField);
+
+        let whatsapp_numberField = document.createElement('input');
+        whatsapp_numberField.type = 'hidden';
+        whatsapp_numberField.name = 'whatsapp_number';
+        whatsapp_numberField.value = formToSubmit.whatsapp_number;
+        form.appendChild(whatsapp_numberField);
         
         let amountField = document.createElement('input');
         amountField.type = 'hidden';
@@ -284,17 +309,21 @@ function closeConfirmPopup(confirmed) {
 
 document.querySelectorAll('.accept-button').forEach(button => {
     button.onclick = function() {
+        let id = this.getAttribute('data-id');
         let username = this.getAttribute('data-username');
+        let whatsapp_number = this.getAttribute('data-whatsapp');
         let amount = this.getAttribute('data-amount');
-        showConfirmPopup(`Apakah Anda yakin ingin mengonfirmasi top-up untuk ${username}?`, 'accept', username, amount);
+        showConfirmPopup(`Apakah Anda yakin ingin mengonfirmasi top-up untuk ${username}?`, 'accept', id, username, whatsapp_number, amount);
     };
 });
 
 document.querySelectorAll('.reject-button').forEach(button => {
     button.onclick = function() {
+        let id = this.getAttribute('data-id');
         let username = this.getAttribute('data-username');
+        let whatsapp_number = this.getAttribute('data-whatsapp');
         let amount = this.getAttribute('data-amount');
-        showConfirmPopup(`Apakah Anda yakin ingin menolak top-up untuk ${username}?`, 'reject', username, amount);
+        showConfirmPopup(`Apakah Anda yakin ingin menolak top-up untuk ${username}?`, 'reject', id, username, whatsapp_number, amount);
     };
 });
 
@@ -309,14 +338,16 @@ document.getElementById('confirmNo').onclick = function() {
 <?php
 require '../data/mysqli_db.php';
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && isset($_POST['username']) && isset($_POST['amount'])) {
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'], $_POST['id'], $_POST['username'], $_POST['whatsapp_number'], $_POST['amount'])) {
     
     $action = $_POST['action'];
+    $id = $_POST['id'];
     $username = $_POST['username'];
     $amount = floatval($_POST['amount']);
-
+    $whatsapp_number = $_POST['whatsapp_number'];
+    
     if ($action === 'accept') {
-        $query = 'UPDATE users SET balance = balance + ? WHERE username = ?';
+        $query = 'UPDATE client SET balance = balance + ? WHERE username = ?';
         $stmt = $conn->prepare($query);
         if ($stmt === false) {
             die('Error prepare statement: ' . $conn->error);
@@ -325,24 +356,30 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && isset($_
         $stmt->execute();
         $stmt->close();
 
-        $query = 'UPDATE topup_requests SET status = "confirmed" WHERE username = ? AND amount = ? AND status = "pending"';
+        $query = 'UPDATE topup SET status = "Accept" WHERE id = ? AND amount = ? AND status = "Pending"';
         $stmt = $conn->prepare($query);
         if ($stmt === false) {
             die('Error prepare statement: ' . $conn->error);
         }
-        $stmt->bind_param('sd', $username, $amount);
+        $stmt->bind_param('sd', $id, $amount);
         $stmt->execute();
         $stmt->close();
 
+        $message = "▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬\n*▬▬▬   TOPUP INVOICE  ▬▬▬*\n▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬\n*Nama : $username*\n*Nomor : $whatsapp_number*\n*Jumlah : Rp.$amount*\n*Topup ID : $id*\n*Status : SUKSES*\n▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬ ";
+        kirimPesanWhatsApp($whatsapp_number, $message);
+
     } elseif ($action === 'reject') {
-        $query = 'UPDATE topup_requests SET status = "rejected" WHERE username = ? AND amount = ? AND status = "pending"';
+        $query = 'UPDATE topup SET status = "Reject" WHERE id = ? AND amount = ? AND status = "Pending"';
         $stmt = $conn->prepare($query);
         if ($stmt === false) {
             die('Error prepare statement: ' . $conn->error);
         }
-        $stmt->bind_param('sd', $username, $amount);
+        $stmt->bind_param('sd', $id, $amount);
         $stmt->execute();
         $stmt->close();
+
+        $message = "▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬\n*▬▬▬   TOPUP INVOICE  ▬▬▬*\n▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬\n*Nama : $username*\n*Nomor : $whatsapp_number*\n*Jumlah : Rp.$amount*\n*Topup ID : $id*\n*Status : GAGAL*\n▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬ ";
+        kirimPesanWhatsApp($whatsapp_number, $message);
 
     } else {
         echo "<script>window.location.href = './admin.php';</script>";
@@ -352,7 +389,30 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && isset($_
     echo "<script>window.location.href = './admin.php';</script>";
     exit();
 }
+
 $conn->close();
+
+function kirimPesanWhatsApp($whatsapp_number, $message) {
+    $url = 'http://localhost:3000/send-message';
+    $data = [
+        'to' => $whatsapp_number,
+        'message' => $message,
+    ];
+
+    $ch = curl_init($url);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_POST, true);
+    curl_setopt($ch, CURLOPT_HTTPHEADER, ['Content-Type: application/json']);
+    curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
+
+    $response = curl_exec($ch);
+    if ($response === false) {
+        die('cURL Error: ' . curl_error($ch));
+    }
+
+    curl_close($ch);
+    return $response;
+}
 ?>
 </body>
 </html>

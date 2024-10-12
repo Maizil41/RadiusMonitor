@@ -9,38 +9,31 @@
 *******************************************************************************************************************
 */
 
-$configFile = '../data/token.json';
-
-if (!file_exists($configFile)) {
-    die('Config file not found');
-}
-
-$config = json_decode(file_get_contents($configFile), true);
-if (!isset($config['token'])) {
-    die('Token not found in config file');
-}
-
-$token = $config['token'];
-$chat_id = $_POST['chat_id'];
+$whatsapp_number = $_POST['whatsapp_number'];
 $message = $_POST['message'];
 
-$url = "https://api.telegram.org/bot$token/sendMessage";
-
+$url = 'http://localhost:3000/send-message';
 $data = [
-    'chat_id' => $chat_id,
-    'text' => $message
+    'to' => $whatsapp_number,
+    'message' => $message,
 ];
 
-$ch = curl_init($url);
-curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-curl_setopt($ch, CURLOPT_POST, true);
-curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($data));
+$options = [
+    'http' => [
+        'header'  => "Content-Type: application/json\r\n",
+        'method'  => 'POST',
+        'content' => json_encode($data),
+    ],
+];
 
-$response = curl_exec($ch);
+$context  = stream_context_create($options);
+$result = file_get_contents($url, false, $context);
 
-curl_close($ch);
-
-header("Location: balance.php");
-exit;
+if ($result === FALSE) {
+    header("Location: balance.php");
+    exit();
+} else {
+    header("Location: balance.php");
+    exit();
+}
 ?>
-

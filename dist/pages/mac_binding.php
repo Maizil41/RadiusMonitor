@@ -357,9 +357,8 @@ if ($result->num_rows > 0) {
         $group = htmlspecialchars($row['groupname']);
         $totalTime = htmlspecialchars(time2str($row['total_session_time']));
         $traffic = htmlspecialchars(toxbyte($row['total_input_octets'] + $row['total_output_octets']));
-        $status = htmlspecialchars($row['status']); // Status dari query
+        $status = htmlspecialchars($row['status']);
 
-        // Tentukan class CSS berdasarkan status
         $statusClass = '';
         switch (true) {
             case strpos($status, 'ONLINE') !== false:

@@ -185,7 +185,7 @@ function check_service_status($service_name) {
 
 function get_ip_info() {
     $ch = curl_init();
-    curl_setopt($ch, CURLOPT_URL, "https://ipinfo.io/json");
+    curl_setopt($ch, CURLOPT_URL, "http://ip-api.com/json");
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
     curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
     $json = curl_exec($ch);
@@ -200,12 +200,11 @@ function get_ip_info() {
 
 $ip_info = get_ip_info();
 
-$ip = isset($ip_info['ip']) ? $ip_info['ip'] : 'N/A';
-$host = isset($ip_info['hostname']) ? $ip_info['hostname'] : 'N/A';
+$ip = isset($ip_info['query']) ? $ip_info['query'] : 'N/A';
 $city = isset($ip_info['city']) ? $ip_info['city'] : 'N/A';
-$region = isset($ip_info['region']) ? $ip_info['region'] : 'N/A';
+$region = isset($ip_info['regionName']) ? $ip_info['regionName'] : 'N/A';
 $country = isset($ip_info['country']) ? $ip_info['country'] : 'N/A';
-$org_info = isset($ip_info['org']) ? $ip_info['org'] : 'N/A';
+$org_info = isset($ip_info['as']) ? $ip_info['as'] : 'N/A';
 
 $org_parts = explode(" ", $org_info, 2);
 $as_number = $org_parts[0];
@@ -238,19 +237,14 @@ $coova_chilli_status = check_service_status('chilli');
                                 <thead>
                                     <tr>
                                         <th><center><span class='info-label'>Hostname:</span> <span class='status-running'><?php echo $hostname; ?></span></th>
-                                    </tr>
                                     <tr>
                                         <th><center><span class='info-label'>Uptime:</span> <span class='status-running'><?php echo htmlspecialchars($uptime); ?></span></th>
-                                    </tr>
                                     <tr>
                                         <th><center><span class='info-label'>Firmware Version:</span> <span class='status-running'><?php echo $firmware_version; ?></span></th>
-                                    </tr>
                                     <tr>
                                         <th><center><span class='info-label'>Kernel Version:</span> <span class='status-running'><?php echo $kernel; ?></span></th>
-                                    </tr>
                                     <tr>
                                         <th><center><span class='info-label'>Model:</span> <span class='status-running'><?php echo $model; ?></span></th>
-                                    </tr>
                                     <tr>
                                         <th><center><span class='info-label'>Local Time:</span> <span class='status-running'><?php echo $local_time; ?></span></th>
                                     </tr>
@@ -273,13 +267,10 @@ $coova_chilli_status = check_service_status('chilli');
                                 <thead>
                                     <tr>
                                         <th><center><span class='info-label'>Radiusd:</span> <span class='info-value <?php echo $radiusd_status == 'Running' ? 'status-running' : 'status-not-running'; ?>'><?php echo $radiusd_status; ?></span></th>
-                                    </tr>
                                     <tr>
                                         <th><center><span class='info-label'>MySQL:</span> <span class='info-value <?php echo $mysql_status == 'Running' ? 'status-running' : 'status-not-running'; ?>'><?php echo $mysql_status; ?></span></th>
-                                    </tr>
                                     <tr>
                                         <th><center><span class='info-label'>Coova-Chilli:</span> <span class='info-value <?php echo $coova_chilli_status == 'Running' ? 'status-running' : 'status-not-running'; ?>'><?php echo $coova_chilli_status; ?></span></th>
-                                    </tr>
                                     <tr>
                                         <th><center><span class='info-label'>OpenClash:</span> <span class='info-value <?php echo $openclash_status == 'Running' ? 'status-running' : 'status-not-running'; ?>'><?php echo $openclash_status; ?></span></th>
                                     </tr>
@@ -305,22 +296,14 @@ $coova_chilli_status = check_service_status('chilli');
                                 <tbody>
                                     <tr>
                                         <th><center><span class='info-label'>IP Address:</span> <span class='status-running''><?php echo $ip; ?></span></th>
-                                    </tr>
-                                    <tr>
-                                        <th><center><span class='info-label'>Hostname:</span> <span class='status-running''><?php echo $host; ?></span></th>
-                                    </tr>
                                     <tr>
                                         <th><center><span class='info-label'>City:</span> <span class='status-running''><?php echo $city; ?></span></th>
-                                    </tr>
                                     <tr>
                                         <th><center><span class='info-label'>Region:</span> <span class='status-running''><?php echo $region; ?></span></th>
-                                    </tr>
                                     <tr>
                                         <th><center><span class='info-label'>Country:</span> <span class='status-running''><?php echo $country; ?></span></th>
-                                    </tr>
                                     <tr>
                                         <th><center><span class='info-label'>As:</span> <span class='status-running''><?php echo $as_number; ?></span></th>
-                                    </tr>
                                     <tr>
                                         <th><center><span class='info-label'>Org:</span> <span class='status-running''><?php echo $organization; ?></span></th>
                                     </tr>

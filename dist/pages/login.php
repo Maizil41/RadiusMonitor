@@ -43,6 +43,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <title>RadiusMonitor | Login</title>
     <link rel="stylesheet" href="../../dist/login/bootstrap.min.css">
     <link rel="stylesheet" href="../../dist/login/all.min.css">
+    <style>@media (max-width:768px){.login-box{width:320px}}</style>
 </head>
 
 <body class="hold-transition login-page">

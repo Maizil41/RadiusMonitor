@@ -187,22 +187,21 @@ require './auth.php';
 require './data/mysqli_db.php';
 include ("data/data.php");
 
-$sql     = "SELECT acctsessionid FROM radacct WHERE acctstoptime IS NULL";
-$result  = mysqli_query($conn, $sql);
+if (isset($_GET['id'])) {
+    $user = mysqli_real_escape_string($conn, $_GET['id']);
 
-if (mysqli_num_rows($result) > 0) {
-  while ($row     = mysqli_fetch_assoc($result)) {
-    $acctid  = $row['acctsessionid'];
+    $sql = "SELECT acctsessionid, framedipaddress FROM radacct WHERE username = '$user' AND acctstoptime IS NULL";
+    $result = mysqli_query($conn, $sql);
 
-    if (isset($_GET['id'])) {
+    if ($result && mysqli_num_rows($result) > 0) {
+        while ($row = mysqli_fetch_assoc($result)) {
+            $acctid = $row['acctsessionid'];
+            $framedipaddress = $row['framedipaddress'];
 
-      $user    = $_GET['id'];
-
-      $command = 'echo \'User-Name="' . $user . '",Acct-Session-Id="' . $acctid . '",Framed-IP-Address=10.10.10.1\' | radclient -c \'1\' -n \'3\' -r \'3\' -t \'3\' -x \'127.0.0.1:3799\' \'disconnect\' \'testing123\' 2>&1';
-
-      $output  = shell_exec($command);
+            $command = 'echo \'User-Name="' . $user . '",Acct-Session-Id="' . $acctid . '",Framed-IP-Address="' . $framedipaddress . '"\' | radclient -c \'1\' -n \'3\' -r \'3\' -t \'3\' -x \'127.0.0.1:3799\' \'disconnect\' \'testing123\' 2>&1';
+            $output = shell_exec($command);
+        }
     }
-  }
 }
         
 echo "  <div class='app-content'> <!--begin::Container-->
@@ -370,9 +369,8 @@ $result = $conn->query($sql);
 $user_data = [];
 if ($result->num_rows > 0) {
     while ($row = $result->fetch_assoc()) {
-        // Cek apakah username adalah MAC address dan reply adalah Access-Reject
         if (preg_match('/^([A-Fa-f0-9]{2}[:-]){5}([A-Fa-f0-9]{2})$/', $row['username']) && $row['reply'] == 'Access-Reject') {
-            continue; // Lewati iterasi ini
+            continue;
         }
         $user_data[] = [
             'username' => htmlspecialchars($row['username']),
@@ -432,7 +430,7 @@ function showConfirmPopup(message, username) {
     document.getElementById('confirmMessage').innerText = message;
     document.getElementById('overlay').classList.add('show');
     document.getElementById('confirmPopup').classList.add('show');
-    deleteUserUsername = username; // Simpan username yang akan dihapus
+    deleteUserUsername = username;
 }
 
 function closeConfirmPopup(confirmed) {
@@ -440,7 +438,6 @@ function closeConfirmPopup(confirmed) {
     document.getElementById('confirmPopup').classList.remove('show');
     if (confirmed) {
         if (deleteUserUsername) {
-            // Redirect ke halaman penghapusan dengan username yang disimpan
             window.location.href = `index.php?id=${encodeURIComponent(deleteUserUsername)}`;
         }
     }
@@ -454,7 +451,6 @@ document.getElementById('confirmNo').onclick = function() {
     closeConfirmPopup(false);
 };
 
-// Fungsi untuk memanggil popup konfirmasi
 function deleteUser(username) {
     showConfirmPopup(`Apakah Anda yakin ingin memutuskan pengguna ${username}?`, username);
 }

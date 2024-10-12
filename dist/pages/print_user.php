@@ -205,6 +205,10 @@ function isMacAddress($username) {
     return preg_match('/^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$/', $username);
 }
 
+function money($number) {
+    return "Rp " . number_format($number, 0, ',', '.');
+}
+
 if ($result->num_rows > 0) {
     while ($row = $result->fetch_assoc()) {
         if (isMacAddress($row["username"])) {
@@ -214,7 +218,7 @@ if ($result->num_rows > 0) {
         echo "<tr>";
         echo "<td><center>" . htmlspecialchars($row["username"]) . "</td>";
         echo "<td><center>" . htmlspecialchars($row["planName"]) . "</td>";
-        echo "<td><center>Rp " . htmlspecialchars($row["planCost"]) . "</td>";
+        echo "<td><center>" . money($row["planCost"]) . "</td>";
         echo "<td><center>" . htmlspecialchars($row["creationdate"]) . "</td>";
         echo "<td><center>
                 <select class='btn btn-warning' id='selectPrinter" . $row['username'] . "'>

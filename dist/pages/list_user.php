@@ -217,8 +217,8 @@ function time2str($time) {
 $statusFilter = isset($_GET['status']) ? $_GET['status'] : '';
 
 $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
-$limit = 10; // Jumlah baris per halaman
-$offset = ($page - 1) * $limit; // Hitung offset
+$limit = 10;
+$offset = ($page - 1) * $limit;
 
 $total_query = "SELECT COUNT(DISTINCT r.username) as total_users 
     FROM radcheck r 
@@ -248,7 +248,6 @@ $total_row = $total_result->fetch_assoc();
 $total_users = $total_row['total_users'];
 $total_pages = ceil($total_users / $limit);
 
-// Query utama dengan filter status, limit, dan offset
 $query = "WITH LatestAcct AS (
     SELECT username,
            MAX(acctstarttime) AS latest_acctstarttime
@@ -268,6 +267,7 @@ StatusData AS (
 ),
 AggregatedData AS (
     SELECT r.username,
+           u.contactperson,
            u.planName,
            p.planCost,
            ugr.groupname,
@@ -285,6 +285,7 @@ AggregatedData AS (
 ),
 FinalData AS (
     SELECT ad.username,
+           ad.contactperson,
            ad.planName,
            ad.planCost,
            ad.groupname,
@@ -310,10 +311,13 @@ echo "
     <div class='panel-heading'>List All User</div>
         <div class='panel-body'>
             <div class='md-whiteframe-z1 mb20 text-center' style='padding: 15px'>
+                <a href='./add_user.php' class='btn btn-primary btn-block'>
+                <i class='ion ion--add'></i> New User </a>
+                <br/>
                 <div class='col-md-8'>
                     </div>
                         <select id='userstatus' name='userstatus' class='form-select'>
-                        <option value=''>All users</option>
+                        <option value=''>All Mac</option>
                         <option value='ONLINE'" . ($statusFilter == 'ONLINE' ? ' selected' : '') . "><center>Online</option>
                         <option value='OFFLINE'" . ($statusFilter == 'OFFLINE' ? ' selected' : '') . "><center>Offline</option>
                         <option value='EXPIRED'" . ($statusFilter == 'EXPIRED' ? ' selected' : '') . "><center>Expired</option>
@@ -323,7 +327,8 @@ echo "
         <table class='table table-bordered table-condensed table-striped table_mobile'>
     <thead>
 <tr>
-    <th><center>Username</th>
+    <th><center>Name</th>
+    <th><center>Voucher</th>
     <th><center>Mac Address</th>
     <th><center>IP Address</th>
     <th><center>Cost</th>
@@ -348,6 +353,7 @@ if ($result->num_rows > 0) {
             continue;
         }
 
+        $name = htmlspecialchars($row['contactperson']);
         $usermac = htmlspecialchars($row['mac_address']);
         $ip = htmlspecialchars($row['ip_address']);
         $cost = htmlspecialchars(money($row['planCost']));
@@ -355,7 +361,7 @@ if ($result->num_rows > 0) {
         $group = htmlspecialchars($row['groupname']);
         $totalTime = htmlspecialchars(time2str($row['total_session_time']));
         $traffic = htmlspecialchars(toxbyte($row['total_input_octets'] + $row['total_output_octets']));
-        $status = htmlspecialchars($row['status']); // Status dari query
+        $status = htmlspecialchars($row['status']);
 
         $statusClass = '';
         switch (true) {
@@ -371,6 +377,7 @@ if ($result->num_rows > 0) {
         }
 
         echo"       
+            <td><center>$name</td>
             <td><center>$username</td>
             <td><center>$usermac</td>
             <td><center>$ip</td>
@@ -387,7 +394,7 @@ if ($result->num_rows > 0) {
     }
 } else {
     echo "
-        <tr><td colspan='9'><center>Tidak ada data</center></td></tr>";
+        <tr><td colspan='10'><center>Tidak ada data</center></td></tr>";
 }
 echo"
     </tbody>

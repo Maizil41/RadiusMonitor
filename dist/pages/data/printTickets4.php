@@ -25,12 +25,6 @@ if ($result->num_rows > 0) {
 
 $conn->close();
 
-$configValues = array(
-    "CONFIG_DB_TBL_DALOBILLINGPLANS" => "billing_plans",
-    "CONFIG_DB_TBL_RADGROUPREPLY" => "radgroupreply",
-    "CONFIG_DB_TBL_RADGROUPCHECK" => "radgroupcheck" 
-);
-
 if (isset($_REQUEST["type"]) && $_REQUEST["type"] == "batch") {
     if (isset($_REQUEST['format'])) {
         $format = $_REQUEST['format'];
@@ -51,7 +45,7 @@ if (isset($_REQUEST["type"]) && $_REQUEST["type"] == "batch") {
         $pdo = new PDO("mysql:host=$host;dbname=$dbname;charset=utf8", $username, $password);
         $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
-        $sql = "SELECT planCost, planTimeBank, planCurrency FROM " . $configValues["CONFIG_DB_TBL_DALOBILLINGPLANS"] . " WHERE planName = :plan";
+        $sql = "SELECT planCost, planTimeBank, planCurrency FROM billing_plans WHERE planName = :plan";
         $stmt = $pdo->prepare($sql);
         $stmt->bindParam(':plan', $plan, PDO::PARAM_STR);
         $stmt->execute();
@@ -68,7 +62,7 @@ if (isset($_REQUEST["type"]) && $_REQUEST["type"] == "batch") {
         $ticketTime = '';
         }
 
-            $sqlQuota = "SELECT value FROM " . $configValues["CONFIG_DB_TBL_RADGROUPREPLY"] . " WHERE groupname = :plan AND attribute = 'ChilliSpot-Max-Total-Octets'";
+            $sqlQuota = "SELECT value FROM radgroupreply WHERE groupname = :plan AND attribute = 'ChilliSpot-Max-Total-Octets'";
             $stmtQuota = $pdo->prepare($sqlQuota);
             $stmtQuota->bindParam(':plan', $plan, PDO::PARAM_STR);
             $stmtQuota->execute();
@@ -76,7 +70,7 @@ if (isset($_REQUEST["type"]) && $_REQUEST["type"] == "batch") {
             $quotaRow = $stmtQuota->fetch(PDO::FETCH_ASSOC);
             $ticketQuota = isset($quotaRow["value"]) ? formatBytes($quotaRow["value"]) : "";
 
-            $sqlActiveTime = "SELECT value FROM " . $configValues["CONFIG_DB_TBL_RADGROUPCHECK"] . " WHERE groupname = :plan AND attribute = 'Max-All-Session'";
+            $sqlActiveTime = "SELECT value FROM radgroupcheck WHERE groupname = :plan AND attribute = 'Max-All-Session'";
             $stmtActiveTime = $pdo->prepare($sqlActiveTime);
             $stmtActiveTime->bindParam(':plan', $plan, PDO::PARAM_STR);
             $stmtActiveTime->execute();
@@ -149,60 +143,7 @@ function printTicketsHTMLTable($accounts, $ticketCost, $ticketTime, $ticketQuota
 <html>
 	<head>
 		<title><?php echo $timestamp ?></title>
-		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-		<meta http-equiv="pragma" content="no-cache" />
-		<link rel="icon" href="assets/img/favicon.png" />
-		<script src="assets/js/jquery.min.js"></script>
-		<style>
-			body {
-				color: #000000;
-				background-color: #FFFFFF;
-				font-size: 14px;
-				font-family:  'Helvetica', arial, sans-serif;
-				margin: 0px;
-				-webkit-print-color-adjust: exact;
-			}
-			table.voucher {
-				display: inline-block;
-				border: 2px solid black;
-				margin: 2px;
-			}
-			@page
-			{
-				size: auto;
-				margin-left: 7mm;
-				margin-right: 3mm;
-				margin-top: 9mm;
-				margin-bottom: 3mm;
-			}
-			@media print
-			{
-				table { page-break-after:auto }
-				tr    { page-break-inside:avoid; page-break-after:auto }
-				td    { page-break-inside:avoid; page-break-after:auto }
-				thead { display:table-header-group }
-				tfoot { display:table-footer-group }
-			}
-			.rotate {
-				max-width: 15px;
-				white-space: nowrap;
-				vertical-align: bottom;
-				padding-right: 5px;
-			}
-
-			.rotate > div {
-				transform: rotate(-90deg);
-			}
-			.qrcode{
-				height:100px;
-				width:100px;
-			}
-			.price{
-				font-size:20px;
-
-			}
-
-		</style>
+        <style>body{color:#000;background-color:#FFF;font-size:14px;font-family:'Helvetica',arial,sans-serif;margin:0;-webkit-print-color-adjust:exact}table.voucher{display:inline-block;border:2px solid #000;margin:2px}@page{size:auto;margin-left:7mm;margin-right:3mm;margin-top:9mm;margin-bottom:3mm}@media print{table{page-break-after:auto}tr{page-break-inside:avoid;page-break-after:auto}td{page-break-inside:avoid;page-break-after:auto}thead{display:table-header-group}tfoot{display:table-footer-group}}.rotate{max-width:15px;white-space:nowrap;vertical-align:bottom;padding-right:5px}.rotate>div{transform:rotate(-90deg)}.qrcode{height:100px;width:100px}.price{font-size:20px}</style>
 	</head>
 <body>
 <table class="voucher" style=" width: 180px;">

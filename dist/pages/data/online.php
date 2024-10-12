@@ -22,7 +22,6 @@ LIMIT 10";
 $result = $conn->query($sql);
 
 if ($result->num_rows > 0) {
-    // Menampilkan data
     while($row = $result->fetch_assoc()) {
         echo "<tr>";
         echo "<td><center>" . htmlspecialchars($row["username"]) . "</td>";

@@ -154,71 +154,68 @@ require './auth.php';
     <button id="confirmNo" class="cancel">No</button>
 </div>
 <?php
-        require './data/mysqli_db.php';
+require './data/mysqli_db.php';
 
-        $sql     = "SELECT acctsessionid FROM radacct WHERE acctstoptime IS NULL";
-        $result  = mysqli_query($conn, $sql);
+if (isset($_GET['id'])) {
+    $user = mysqli_real_escape_string($conn, $_GET['id']);
 
-        if (mysqli_num_rows($result) > 0) {
-          while ($row     = mysqli_fetch_assoc($result)) {
-            $acctid  = $row['acctsessionid'];
-        
-            if (isset($_GET['id'])) {
-        
-              $user    = $_GET['id'];
-        
-              $command = 'echo \'User-Name="' . $user . '",Acct-Session-Id="' . $acctid . '",Framed-IP-Address=10.10.10.1\' | radclient -c \'1\' -n \'3\' -r \'3\' -t \'3\' -x \'127.0.0.1:3799\' \'disconnect\' \'testing123\' 2>&1';
-        
-              $output  = shell_exec($command);
-            }
-          }
+    $sql = "SELECT acctsessionid, framedipaddress FROM radacct WHERE username = '$user' AND acctstoptime IS NULL";
+    $result = mysqli_query($conn, $sql);
+
+    if ($result && mysqli_num_rows($result) > 0) {
+        while ($row = mysqli_fetch_assoc($result)) {
+            $acctid = $row['acctsessionid'];
+            $framedipaddress = $row['framedipaddress'];
+
+            $command = 'echo \'User-Name="' . $user . '",Acct-Session-Id="' . $acctid . '",Framed-IP-Address="' . $framedipaddress . '"\' | radclient -c \'1\' -n \'3\' -r \'3\' -t \'3\' -x \'127.0.0.1:3799\' \'disconnect\' \'testing123\' 2>&1';
+            $output = shell_exec($command);
         }
+    }
+}
 
-        function money($number) {
-            return "Rp " . number_format($number, 0, ',', '.');
-        }
+function money($number) {
+    return "Rp " . number_format($number, 0, ',', '.');
+}
 
-        function toxbyte($size) {
-            if ($size > 1073741824) {
-                return round($size / 1073741824, 2) . " GB";
-            } elseif ($size > 1048576) {
-                return round($size / 1048576, 2) . " MB";
-            } elseif ($size > 1024) {
-                return round($size / 1024, 2) . " KB";
-            } else {
-                return $size . " B";
-            }
-        }
+function toxbyte($size) {
+    if ($size > 1073741824) {
+        return round($size / 1073741824, 2) . " GB";
+    } elseif ($size > 1048576) {
+        return round($size / 1048576, 2) . " MB";
+    } elseif ($size > 1024) {
+        return round($size / 1024, 2) . " KB";
+    } else {
+        return $size . " B";
+    }
+}
 
-        function time2str($time) {
-            $str = "";
-            $time = floor($time);
-            if (!$time) return "0 seconds";
-            $d = floor($time / 86400);
-            if ($d) {
-                $str .= "$d days, ";
-                $time %= 86400;
-            }
-            $h = floor($time / 3600);
-            if ($h) {
-                $str .= "$h hrs, ";
-                $time %= 3600;
-            }
-            $m = floor($time / 60);
-            if ($m) {
-                $str .= "$m min, ";
-                $time %= 60;
-            }
-            if ($time) $str .= "$time sec, ";
-            return rtrim($str, ', ');
-        }
+function time2str($time) {
+    $str = "";
+    $time = floor($time);
+    if (!$time) return "0 seconds";
+    $d = floor($time / 86400);
+    if ($d) {
+        $str .= "$d days, ";
+        $time %= 86400;
+    }
+    $h = floor($time / 3600);
+    if ($h) {
+        $str .= "$h hrs, ";
+        $time %= 3600;
+    }
+    $m = floor($time / 60);
+    if ($m) {
+        $str .= "$m min, ";
+        $time %= 60;
+    }
+    if ($time) $str .= "$time sec, ";
+    return rtrim($str, ', ');
+}
 
-// Ambil halaman saat ini dari query string, default ke 1 jika tidak ada
 $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
-$limit = 10; // Jumlah baris per halaman
-$offset = ($page - 1) * $limit; // Hitung offset
+$limit = 10;
+$offset = ($page - 1) * $limit;
 
-// Query untuk menghitung total jumlah baris hanya untuk yang online
 $total_query = "SELECT COUNT(DISTINCT username) AS total_users
 FROM radacct
 WHERE acctstoptime IS NULL";
@@ -228,21 +225,17 @@ $total_row = $total_result->fetch_assoc();
 $total_users = $total_row['total_users'];
 $total_pages = ceil($total_users / $limit);
 
-// Query utama dengan limit dan offset hanya untuk yang online
 $query = "WITH TotalSesi AS (
-    SELECT username, 
-           SUM(acctsessiontime) AS total_acctsessiontime, 
-           SUM(acctinputoctets) AS total_acctinputoctets, 
-           SUM(acctoutputoctets) AS total_acctoutputoctets
-    FROM radacct
+    SELECT username, acctsessiontime, acctinputoctets, acctoutputoctets
+    FROM radacct WHERE acctstoptime IS NULL
     GROUP BY username
 )
 SELECT ra.username, 
        ra.callingstationid, 
        ra.framedipaddress, 
-       ts.total_acctsessiontime, 
-       ts.total_acctinputoctets, 
-       ts.total_acctoutputoctets, 
+       ts.acctsessiontime, 
+       ts.acctinputoctets, 
+       ts.acctoutputoctets, 
        ubi.planName, 
        rgc.value AS Max_All_Session
 FROM radacct ra
@@ -250,7 +243,7 @@ JOIN TotalSesi ts ON ra.username = ts.username
 LEFT JOIN userbillinfo ubi ON ra.username = ubi.username
 LEFT JOIN radgroupcheck rgc ON ubi.planName = rgc.groupname AND rgc.attribute = 'Max-All-Session'
 WHERE ra.acctstoptime IS NULL
-GROUP BY ra.username, ra.callingstationid, ra.framedipaddress, ts.total_acctsessiontime, ts.total_acctinputoctets, ts.total_acctoutputoctets, ubi.planName, rgc.value;
+GROUP BY ra.username, ra.callingstationid, ra.framedipaddress, ts.acctsessiontime, ts.acctinputoctets, ts.acctoutputoctets, ubi.planName, rgc.value;
 ";
 
 $result = $conn->query($query);
@@ -272,7 +265,7 @@ echo "
     <th><center>Remaining</th>
     <th><center>Upload</th>
     <th><center>Download</th>
-    <th><center>Traffic</th>
+    <th><center>Total</th>
     <th><center>Actions</th>
 </tr>
 </thead>
@@ -285,16 +278,15 @@ if ($result->num_rows > 0) {
         $ip = htmlspecialchars($row['framedipaddress']);
         $plan = htmlspecialchars($row['planName']);
         
-        // Cek apakah Max_All_Session bernilai NULL
         if (is_null($row['Max_All_Session'])) {
             $totalTime = "Unlimited";
         } else {
-            $totalTime = time2str(($row['Max_All_Session']) - ($row['total_acctsessiontime']));
+            $totalTime = time2str(($row['Max_All_Session']) - ($row['acctsessiontime']));
         }
 
-        $upload = htmlspecialchars(toxbyte($row['total_acctinputoctets']));
-        $download = htmlspecialchars(toxbyte($row['total_acctoutputoctets']));
-        $traffic = htmlspecialchars(toxbyte($row['total_acctinputoctets'] + $row['total_acctoutputoctets']));
+        $upload = htmlspecialchars(toxbyte($row['acctinputoctets']));
+        $download = htmlspecialchars(toxbyte($row['acctoutputoctets']));
+        $traffic = htmlspecialchars(toxbyte($row['acctinputoctets'] + $row['acctoutputoctets']));
 
         echo"       
         <td><center>$username</td>
@@ -360,7 +352,7 @@ function showConfirmPopup(message, username) {
     document.getElementById('confirmMessage').innerText = message;
     document.getElementById('overlay').classList.add('show');
     document.getElementById('confirmPopup').classList.add('show');
-    deleteUserUsername = username; // Simpan username yang akan dihapus
+    deleteUserUsername = username;
 }
 
 function closeConfirmPopup(confirmed) {
@@ -368,7 +360,6 @@ function closeConfirmPopup(confirmed) {
     document.getElementById('confirmPopup').classList.remove('show');
     if (confirmed) {
         if (deleteUserUsername) {
-            // Redirect ke halaman penghapusan dengan username yang disimpan
             window.location.href = `online_user.php?id=${encodeURIComponent(deleteUserUsername)}`;
         }
     }
@@ -382,7 +373,6 @@ document.getElementById('confirmNo').onclick = function() {
     closeConfirmPopup(false);
 };
 
-// Fungsi untuk memanggil popup konfirmasi
 function deleteUser(username) {
     showConfirmPopup(`Apakah Anda yakin ingin memutuskan pengguna ${username}?`, username);
 }
