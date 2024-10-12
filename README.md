@@ -28,7 +28,7 @@ Features
 - Income Calculation
 - Database Restore & Backup
 - QRCode Tickets support
-- WhatsApp Bot Integration `(coming soon)`
+- WhatsApp Bot Integration
 - PPPOE Management `(coming soon)`
 
 Credit
