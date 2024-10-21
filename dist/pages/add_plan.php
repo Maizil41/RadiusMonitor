@@ -614,13 +614,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['addbillplans']) && $_
         $values_check[] = "(?, 'Auth-Type', ':=', 'Accept')";
         $params_check[] = $planName;
         
-        if (!empty($planTimeBank)) {
-            $stmt = $pdo->prepare("INSERT INTO radgroupcheck (groupname, attribute, op, value) VALUES (:planName, 'Access-Period', ':=', :planTimeBank)");
-            $stmt->bindParam(':planName', $planName);
-            $stmt->bindParam(':planTimeBank', $planTimeBank);
-            $stmt->execute();
-        }
-
         if (!empty($durasi)) {
             $values_check[] = "(?, 'Max-All-Session', ':=', ?)";
             $params_check[] = $planName;

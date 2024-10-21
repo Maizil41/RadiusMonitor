@@ -274,6 +274,31 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 $conn->begin_transaction();
 
                 if (isset($_POST['addUser']) && $_POST['addUser'] == 'top') {
+                    $stmt = $conn->prepare("SELECT planTimeBank FROM billing_plans WHERE planName = ?");
+                    $stmt->bind_param("s", $plan_name);
+                    $stmt->execute();
+                    $stmt->bind_result($planTimeBank);
+                    $stmt->fetch();
+                    $stmt->close();
+
+                    if (!empty($planTimeBank)) {
+                        $stmt = $conn->prepare("SELECT DATE_FORMAT(DATE_ADD(NOW(), INTERVAL ? SECOND), '%d %b %Y %H:%i:%s') AS Expiration");
+                        $stmt->bind_param("i", $planTimeBank);
+                        $stmt->execute();
+                        $stmt->bind_result($expiration);
+                        $stmt->fetch();
+                        $stmt->close();
+
+                        if (!empty($expiration)) {
+                            $stmt = $conn->prepare("INSERT INTO radcheck (username, attribute, op, value) VALUES (?, ?, ?, ?)");
+                            $stmt->bind_param("ssss", $code, $attribute, $op, $expiration);
+                            $attribute = 'Expiration';
+                            $op = ":=";
+                            $stmt->execute();
+                            $stmt->close();
+                        }
+                    }
+                    
                     $stmt = $conn->prepare("INSERT INTO radcheck (username, attribute, op, value) VALUES (?, ?, ?, ?)");
                     $stmt->bind_param("ssss", $code, $attribute, $op, $value);
                     $attribute = "Auth-Type";

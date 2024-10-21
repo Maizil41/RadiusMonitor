@@ -320,6 +320,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $number = generate_random_string($stringLength, $stringType, $prefix);
                 
                 $now_formatted = $now->format('Y-m-d H:i:s');
+                
+                $stmt = $conn->prepare("SELECT planTimeBank FROM billing_plans WHERE planName = ?");
+                $stmt->execute([$planName]);
+                $plan_row = $stmt->fetch(PDO::FETCH_ASSOC);
+                
+                if ($plan_row && !empty($plan_row['planTimeBank'])) {
+                    $planTimeBank = $plan_row['planTimeBank'];
+                    $stmt = $conn->prepare("SELECT DATE_FORMAT(DATE_ADD(NOW(), INTERVAL ? SECOND), '%d %b %Y %H:%i:%s') AS Expiration");
+                    $stmt->execute([$planTimeBank]);
+                    $expiration_row = $stmt->fetch(PDO::FETCH_ASSOC);
+                    
+                    if ($expiration_row && !empty($expiration_row['Expiration'])) {
+                        $expiration = $expiration_row['Expiration'];
+
+                        $stmt = $conn->prepare("INSERT INTO radcheck (username, attribute, op, value) VALUES (?, ?, ?, ?)");
+                        $stmt->execute([$number, 'Expiration', ':=', $expiration]);
+                    }
+                }
 
                 $stmt = $conn->prepare("INSERT INTO radcheck (username, attribute, op, value) VALUES (?, ?, ?, ?)");
                 $stmt->execute([$number, 'Auth-Type', ':=', 'Accept']);

@@ -12,6 +12,7 @@ require './data/pdo_db.php';
 
 $conn = get_db_connection();
 
+session_name('radmon_session');
 session_start();
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {

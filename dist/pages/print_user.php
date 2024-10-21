@@ -165,27 +165,32 @@ $limit = 10;
 $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
 $offset = ($page - 1) * $limit;
 
-$sql_total = "SELECT COUNT(*) as total FROM radcheck
-              JOIN radusergroup ON radcheck.username = radusergroup.username
-              JOIN userbillinfo ON radcheck.username = userbillinfo.username
-              JOIN billing_plans ON userbillinfo.planName = billing_plans.planName";
+$sql_total = "SELECT COUNT(DISTINCT radcheck.username) AS total
+FROM radcheck
+JOIN radusergroup ON radcheck.username = radusergroup.username
+JOIN userbillinfo ON radcheck.username = userbillinfo.username
+JOIN billing_plans ON userbillinfo.planName = billing_plans.planName
+WHERE radcheck.username NOT REGEXP '^[0-9A-Fa-f]{2}(:[0-9A-Fa-f]{2}){5}$';";
+
 $result_total = $conn->query($sql_total);
 $row_total = $result_total->fetch_assoc();
 $total_data = $row_total['total'];
 $total_pages = ceil($total_data / $limit);
 
-$sql = "SELECT 
-            radcheck.username, 
-            radusergroup.groupname,
-            userbillinfo.planName, 
-            billing_plans.planCost, 
-            userbillinfo.creationdate
-        FROM radcheck
-        JOIN radusergroup ON radcheck.username = radusergroup.username
-        JOIN userbillinfo ON radcheck.username = userbillinfo.username
-        JOIN billing_plans ON userbillinfo.planName = billing_plans.planName
-        ORDER BY userbillinfo.creationdate DESC
-        LIMIT $limit OFFSET $offset";
+
+$sql = "SELECT DISTINCT
+    radcheck.username,
+    radusergroup.groupname,
+    userbillinfo.planName,
+    billing_plans.planCost,
+    userbillinfo.creationdate
+FROM radcheck
+JOIN radusergroup ON radcheck.username = radusergroup.username
+JOIN userbillinfo ON radcheck.username = userbillinfo.username
+JOIN billing_plans ON userbillinfo.planName = billing_plans.planName
+WHERE radcheck.username NOT REGEXP '^[0-9A-Fa-f]{2}([-:][0-9A-Fa-f]{2}){5}$'
+ORDER BY userbillinfo.creationdate DESC
+LIMIT $limit OFFSET $offset";
 $result = $conn->query($sql);
 
 echo '<div class="table-responsive">
@@ -201,20 +206,12 @@ echo '<div class="table-responsive">
             </thead>
         <tbody>';
 
-function isMacAddress($username) {
-    return preg_match('/^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$/', $username);
-}
-
 function money($number) {
     return "Rp " . number_format($number, 0, ',', '.');
 }
 
 if ($result->num_rows > 0) {
     while ($row = $result->fetch_assoc()) {
-        if (isMacAddress($row["username"])) {
-            continue;
-        }
-
         echo "<tr>";
         echo "<td><center>" . htmlspecialchars($row["username"]) . "</td>";
         echo "<td><center>" . htmlspecialchars($row["planName"]) . "</td>";
