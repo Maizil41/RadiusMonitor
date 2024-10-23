@@ -41,11 +41,11 @@ Features
 Credit
 ---
 <ul>
-  <li><a href="https://t.me/maizil41" target="_blank">Maizil</a></li>
+  <li>Owner : <a href="https://github.com/maizil41" target="_blank">MAIZIL</a></li>
 </ul>
 
 <ul>
-  <li><a href="https://t.me/mutiarawrt" target="_blank">Mutiara-Wrt</a></li>
+  <li>Auto Installer : <a href="https://github.com/rtaserver" target="_blank">RTA-SERVER</a></li>
 </ul>
 
 Screenshot
