@@ -1,6 +1,7 @@
-<h1 align="center">
-  RADIUS HOTSPOT MONITOR FOR OPENWRT
-</h1>
+<div align="center">
+  <img src="screenshot/logo.svg" alt="logo" width="150">
+  <h1>RADIUS HOTSPOT MONITOR FOR OPENWRT</h1>
+</div>
 
 <div align="center">
   <img alt="License" src="https://img.shields.io/github/license/Maizil41/RadiusMonitor?style=for-the-badge&logo=github">
