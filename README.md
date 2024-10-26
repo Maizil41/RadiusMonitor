@@ -1,6 +1,6 @@
 <div align="center">
   <img src="screenshot/logo.svg" alt="logo" width="150">
-  <h1>RADIUS HOTSPOT MONITOR FOR OPENWRT</h1>
+  <h1>RADIUS MONITOR</h1>
 </div>
 
 <div align="center">
