@@ -52,13 +52,61 @@ Screenshot
 ---
 <details><summary>Dashboard</summary>
  <p>
-  <img src="https://github.com/Maizil41/RadiusMonitor/blob/main/Capture1.PNG" alt="dashboard">
+  <img src="screenshot/dashboard.png" alt="dashboard">
+ </p>
+</details>
+
+<details><summary>List Users</summary>
+ <p>
+  <img src="screenshot/list_user.png" alt="list_user">
+ </p>
+</details>
+
+<details><summary>Online Users</summary>
+ <p>
+  <img src="screenshot/online_user.png" alt="online_user">
+ </p>
+</details>
+
+<details><summary>Mac Binding</summary>
+ <p>
+  <img src="screenshot/mac_binding.png" alt="mac_binding">
+ </p>
+</details>
+
+<details><summary>Plans</summary>
+ <p>
+  <img src="screenshot/plans.png" alt="plans">
+ </p>
+</details>
+
+<details><summary>Bandwidth</summary>
+ <p>
+  <img src="screenshot/bandwidth.png" alt="bandwidth">
+ </p>
+</details>
+
+<details><summary>Print User</summary>
+ <p>
+  <img src="screenshot/print_user.png" alt="print_user">
+ </p>
+</details>
+
+<details><summary>Print Batch</summary>
+ <p>
+  <img src="screenshot/print_batch.png" alt="print_batch">
+ </p>
+</details>
+
+<details><summary>Print Setting</summary>
+ <p>
+  <img src="screenshot/print_setting.png" alt="print_setting">
  </p>
 </details>
 
 <details><summary>System</summary>
  <p>
-  <img src="https://github.com/Maizil41/RadiusMonitor/blob/main/Capture2.PNG" alt="system">
+  <img src="screenshot/system.png" alt="system">
  </p>
 </details>
 
