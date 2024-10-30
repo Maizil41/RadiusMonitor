@@ -22,7 +22,8 @@ Packages Needed
 - Freeradius3
 - Coova-Chilli `(For Loginpage)`
 - php `7` or `8`
-- php-mod-mysqli, php-mod-pdo-mysql, php-mod-curl, php-mod-gd
+- php-cli, php-mod-mysqli, php-mod-pdo-mysql, php-mod-gd, php-mod-xml, php-mod-filter, php-mod-curl
+- iptables-nft, iptables-mod-hashlimit
 
 Features
 ---
