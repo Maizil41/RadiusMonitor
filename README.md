@@ -5,7 +5,7 @@
 
 <div align="center">
   <img alt="License" src="https://img.shields.io/github/license/Maizil41/RadiusMonitor?style=for-the-badge&logo=github">
-  <a target="_blank" href="https://github.com/Maizil41/RadiusMonitor/releases"><img src="https://img.shields.io/badge/Version-2.3-blue?style=for-the-badge&logo=github"></a>
+  <a target="_blank" href="https://github.com/Maizil41/RadiusMonitor/releases"><img src="https://img.shields.io/badge/Version-2.4--beta-blue?style=for-the-badge&logo=github"></a>
   <a target="_blank" href="https://github.com/Maizil41/Mutiara-Wrt/releases"><img src="https://img.shields.io/github/downloads/Maizil41/RadiusMonitor/total?style=for-the-badge&logo=github"></a>
 </div>
 <hr/>
