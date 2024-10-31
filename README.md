@@ -23,7 +23,8 @@ Packages Needed
 - Coova-Chilli `(For Loginpage)`
 - php `7` or `8`
 - php-cli, php-mod-mysqli, php-mod-pdo-mysql, php-mod-gd, php-mod-xml, php-mod-filter, php-mod-curl
-- iptables-nft, iptables-mod-hashlimit
+- iptables-nft `(firewall4)`
+- iptables-mod-hashlimit
 
 Features
 ---
