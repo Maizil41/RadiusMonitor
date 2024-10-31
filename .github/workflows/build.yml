@@ -11,7 +11,7 @@ on:
 
 jobs:
   build:
-    name: ${{ matrix.arch }} build
+    name: ${{ matrix.package }} build
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
