@@ -248,7 +248,8 @@ $total_row = $total_result->fetch_assoc();
 $total_users = $total_row['total_users'];
 $total_pages = ceil($total_users / $limit);
 
-$query = "WITH LatestAcct AS (
+$query = "
+WITH LatestAcct AS (
     SELECT username,
            MAX(acctstarttime) AS latest_acctstarttime
     FROM radacct
@@ -265,6 +266,14 @@ StatusData AS (
     FROM radacct a
     JOIN LatestAcct la ON a.username = la.username AND a.acctstarttime = la.latest_acctstarttime
 ),
+AcctSummary AS (
+    SELECT username,
+           SUM(acctinputoctets) AS total_input_octets,
+           SUM(acctoutputoctets) AS total_output_octets,
+           SUM(acctsessiontime) AS total_session_time
+    FROM radacct
+    GROUP BY username
+),
 AggregatedData AS (
     SELECT r.username,
            u.contactperson,
@@ -273,15 +282,16 @@ AggregatedData AS (
            ugr.groupname,
            MAX(a.framedipaddress) AS ip_address,
            MAX(a.callingstationid) AS mac_address,
-           SUM(a.acctinputoctets) AS total_input_octets,
-           SUM(a.acctoutputoctets) AS total_output_octets,
-           SUM(a.acctsessiontime) AS total_session_time
+           COALESCE(acs.total_input_octets, 0) AS total_input_octets,
+           COALESCE(acs.total_output_octets, 0) AS total_output_octets,
+           COALESCE(acs.total_session_time, 0) AS total_session_time
     FROM radcheck r
     LEFT JOIN userbillinfo u ON r.username = u.username
     LEFT JOIN billing_plans p ON u.planName = p.planName
     LEFT JOIN radusergroup ugr ON r.username = ugr.username
+    LEFT JOIN AcctSummary acs ON r.username = acs.username
     LEFT JOIN radacct a ON r.username = a.username
-    GROUP BY r.username, u.planName, p.planCost, ugr.groupname
+    GROUP BY r.username, u.contactperson, u.planName, p.planCost, ugr.groupname
 ),
 FinalData AS (
     SELECT ad.username,
