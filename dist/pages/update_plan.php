@@ -137,6 +137,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['updatebillplans']) &&
             $stmt->bindParam(':bw_id', $bw_id);
             $stmt->execute();
         }
+        
+        if (!empty($planTimeBank)) {
+            $stmt = $pdo->prepare("INSERT INTO radgroupcheck (groupname, attribute, op, value) VALUES (:planName, 'Access-Period', ':=', :planTimeBank)");
+            $stmt->bindParam(':planName', $planName);
+            $stmt->bindParam(':planTimeBank', $planTimeBank);
+            $stmt->execute();
+        }
 
         $pdo->commit();
 

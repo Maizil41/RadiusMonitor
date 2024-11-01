@@ -217,7 +217,7 @@ if (!$plan) {
                     
                     <label for="idleTimeout" class="col-md-2 control-label">Idle Timeout</label>
                     <div class="col-md-2">
-                        <input type="number" class="form-control" id="idleTimeout" name="idleTimeout" maxlength="6" value="<?php echo htmlspecialchars($plan['idle_timeout']); ?>" required>
+                        <input type="number" class="form-control" id="idleTimeout" name="idleTimeout" maxlength="6" value="<?php echo htmlspecialchars($plan['idle_timeout']); ?>">
                     </div>
                 </div>
 
