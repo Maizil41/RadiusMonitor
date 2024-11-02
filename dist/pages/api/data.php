@@ -47,20 +47,11 @@ function fetchQueryResults($conn, $query) {
 $query_total_hari = "
 SELECT * FROM (
     SELECT 
-        tanggal,
-        SUM(planCost) AS total_pendapatan
-    FROM (
-        SELECT 
-            DATE(a.acctstarttime) AS tanggal,
-            p.planCost
-        FROM radacct a
-        JOIN userbillinfo u ON a.username = u.username
-        JOIN billing_plans p ON u.planName = p.planName
-        WHERE a.acctstarttime IS NOT NULL
-        GROUP BY tanggal, a.username
-    ) AS daily_totals
-    GROUP BY tanggal
-    ORDER BY tanggal DESC
+        date AS tanggal,
+        SUM(amount) AS total_pendapatan
+    FROM income
+    GROUP BY date
+    ORDER BY date DESC
     LIMIT 10
 ) AS latest_totals
 ORDER BY tanggal ASC;
@@ -70,18 +61,9 @@ $daily_revenue = fetchQueryResults($conn, $query_total_hari);
 $query_total_bulan = "
 SELECT * FROM (
     SELECT 
-        bulan,
-        SUM(planCost) AS total_pendapatan
-    FROM (
-        SELECT 
-            DATE_FORMAT(a.acctstarttime, '%Y-%m') AS bulan,
-            p.planCost
-        FROM radacct a
-        JOIN userbillinfo u ON a.username = u.username
-        JOIN billing_plans p ON u.planName = p.planName
-        WHERE a.acctstarttime IS NOT NULL
-        GROUP BY bulan, a.username
-    ) AS monthly_totals
+        DATE_FORMAT(date, '%Y-%m') AS bulan,
+        SUM(amount) AS total_pendapatan
+    FROM income
     GROUP BY bulan
     ORDER BY bulan DESC
     LIMIT 10
@@ -93,18 +75,9 @@ $monthly_revenue = fetchQueryResults($conn, $query_total_bulan);
 $query_total_tahun = "
 SELECT * FROM (
     SELECT 
-        tahun,
-        SUM(planCost) AS total_pendapatan
-    FROM (
-        SELECT 
-            DATE_FORMAT(a.acctstarttime, '%Y') AS tahun,
-            p.planCost
-        FROM radacct a
-        JOIN userbillinfo u ON a.username = u.username
-        JOIN billing_plans p ON u.planName = p.planName
-        WHERE a.acctstarttime IS NOT NULL
-        GROUP BY tahun, a.username
-    ) AS yearly_totals
+        DATE_FORMAT(date, '%Y') AS tahun,
+        SUM(amount) AS total_pendapatan
+    FROM income
     GROUP BY tahun
     ORDER BY tahun DESC
     LIMIT 10

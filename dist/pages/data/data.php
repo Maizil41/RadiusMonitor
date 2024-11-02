@@ -52,36 +52,18 @@ $userCountYesterday = $resultUserCountYesterday->fetch_assoc()['total_user_yeste
 $percentChangeFormatted1 = number_format($percentChange1, 0) . '%';
 
 $sqlPendapatanHariIni = "
-    SELECT 
-        SUM(planCost) AS total_pendapatan
-    FROM (
-        SELECT 
-            DATE(a.acctstarttime) AS tanggal,
-            p.planCost
-        FROM radacct a
-        JOIN userbillinfo u ON a.username = u.username
-        JOIN billing_plans p ON u.planName = p.planName
-        WHERE a.acctstarttime IS NOT NULL AND DATE(a.acctstarttime) = CURDATE()
-        GROUP BY tanggal, a.username
-    ) AS daily_totals;
+SELECT SUM(amount) AS total_pendapatan
+FROM income
+WHERE date = CURDATE()
 ";
 $resultPendapatanHariIni = $conn->query($sqlPendapatanHariIni);
 $rowPendapatanHariIni = $resultPendapatanHariIni->fetch_assoc();
 $totalPendapatanHariIni = $rowPendapatanHariIni['total_pendapatan'];
 
 $sqlPendapatanKemarin = "
-    SELECT 
-        SUM(planCost) AS total_pendapatan
-    FROM (
-        SELECT 
-            DATE(a.acctstoptime) AS tanggal,
-            p.planCost
-        FROM radacct a
-        JOIN userbillinfo u ON a.username = u.username
-        JOIN billing_plans p ON u.planName = p.planName
-        WHERE a.acctstoptime IS NOT NULL AND DATE(a.acctstoptime) = CURDATE() - INTERVAL 1 DAY
-        GROUP BY tanggal, a.username
-    ) AS daily_totals;
+SELECT SUM(amount) AS total_pendapatan
+FROM income
+WHERE date = CURDATE() - INTERVAL 1 DAY
 ";
 $resultPendapatanKemarin = $conn->query($sqlPendapatanKemarin);
 $rowPendapatanKemarin = $resultPendapatanKemarin->fetch_assoc();
@@ -99,23 +81,9 @@ $percentChangeFormatted2 = number_format($percentChange2, 0) . '%';
 $totalPendapatanKemarin = number_format($totalPendapatanKemarin, 0);
 
 $sqlPendapatan_bulanIni = "
-    SELECT 
-        bulan,
-        SUM(planCost) AS total_pendapatan
-    FROM (
-        SELECT 
-            DATE_FORMAT(a.acctstarttime, '%Y-%m') AS bulan,
-            p.planCost
-        FROM radacct a
-        JOIN userbillinfo u ON a.username = u.username
-        JOIN billing_plans p ON u.planName = p.planName
-        WHERE a.acctstarttime IS NOT NULL 
-          AND YEAR(a.acctstarttime) = YEAR(CURDATE())
-          AND MONTH(a.acctstarttime) = MONTH(CURDATE())
-        GROUP BY bulan, a.username
-    ) AS monthly_totals
-    GROUP BY bulan
-    ORDER BY bulan;
+SELECT SUM(amount) AS total_pendapatan
+FROM income
+WHERE YEAR(date) = YEAR(CURDATE()) AND MONTH(date) = MONTH(CURDATE())
 ";
 
 $resultPendapatan_bulanIni = $conn->query($sqlPendapatan_bulanIni);
@@ -128,23 +96,10 @@ if (is_array($rowPendapatan_bulanIni) && isset($rowPendapatan_bulanIni['total_pe
 }
 
 $sqlPendapatan_bulanLalu = "
-    SELECT 
-        bulan,
-        SUM(planCost) AS total_pendapatan
-    FROM (
-        SELECT 
-            DATE_FORMAT(a.acctstoptime, '%Y-%m') AS bulan,
-            p.planCost
-        FROM radacct a
-        JOIN userbillinfo u ON a.username = u.username
-        JOIN billing_plans p ON u.planName = p.planName
-        WHERE a.acctstoptime IS NOT NULL 
-          AND YEAR(a.acctstoptime) = YEAR(CURDATE() - INTERVAL 1 MONTH)
-          AND MONTH(a.acctstoptime) = MONTH(CURDATE() - INTERVAL 1 MONTH)
-        GROUP BY bulan, a.username
-    ) AS monthly_totals
-    GROUP BY bulan
-    ORDER BY bulan;
+SELECT SUM(amount) AS total_pendapatan
+FROM income
+WHERE YEAR(date) = YEAR(CURDATE() - INTERVAL 1 MONTH) 
+  AND MONTH(date) = MONTH(CURDATE() - INTERVAL 1 MONTH)
 ";
 
 $resultPendapatan_bulanLalu = $conn->query($sqlPendapatan_bulanLalu);
