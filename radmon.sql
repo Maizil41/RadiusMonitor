@@ -5,12 +5,10 @@ SET time_zone = '+00:00';
 SET foreign_key_checks = 0;
 SET sql_mode = 'NO_AUTO_VALUE_ON_ZERO';
 
-DROP DATABASE IF EXISTS `radmon`;
-CREATE DATABASE `radmon` /*!40100 DEFAULT CHARACTER SET utf8mb3 */;
+CREATE DATABASE IF NOT EXISTS `radmon` /*!40100 DEFAULT CHARACTER SET utf8mb3 */;
 USE `radmon`;
 
-DROP TABLE IF EXISTS `bandwidth`;
-CREATE TABLE `bandwidth` (
+CREATE TABLE IF NOT EXISTS `bandwidth` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `name` varchar(64) NOT NULL,
   `rate_down` int(11) DEFAULT 0,
@@ -20,8 +18,7 @@ CREATE TABLE `bandwidth` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
 
 
-DROP TABLE IF EXISTS `batch_history`;
-CREATE TABLE `batch_history` (
+CREATE TABLE IF NOT EXISTS `batch_history` (
   `id` int(32) NOT NULL AUTO_INCREMENT,
   `batch_name` varchar(64) DEFAULT NULL COMMENT 'an identifier name of the batch instance',
   `batch_description` varchar(256) DEFAULT NULL COMMENT 'general description of the entry',
@@ -36,8 +33,7 @@ CREATE TABLE `batch_history` (
 ) ENGINE=MyISAM DEFAULT CHARSET=latin1;
 
 
-DROP TABLE IF EXISTS `billing_plans`;
-CREATE TABLE `billing_plans` (
+CREATE TABLE IF NOT EXISTS `billing_plans` (
   `id` int(8) NOT NULL AUTO_INCREMENT,
   `planName` varchar(128) DEFAULT NULL,
   `planId` varchar(128) DEFAULT NULL,
@@ -70,8 +66,7 @@ CREATE TABLE `billing_plans` (
 ) ENGINE=MyISAM DEFAULT CHARSET=latin1;
 
 
-DROP TABLE IF EXISTS `client`;
-CREATE TABLE `client` (
+CREATE TABLE IF NOT EXISTS `client` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `username` varchar(50) NOT NULL,
   `password` varchar(255) NOT NULL,
@@ -81,9 +76,14 @@ CREATE TABLE `client` (
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
 
+CREATE TABLE IF NOT EXISTS `income` (
+  `username` varchar(255) NOT NULL,
+  `amount` int(11) NOT NULL,
+  `date` date NOT NULL,
+  PRIMARY KEY (`date`,`username`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
 
-DROP TABLE IF EXISTS `nas`;
-CREATE TABLE `nas` (
+CREATE TABLE IF NOT EXISTS `nas` (
   `id` int(10) NOT NULL AUTO_INCREMENT,
   `nasname` varchar(128) COLLATE utf8mb3_unicode_ci NOT NULL,
   `shortname` varchar(32) COLLATE utf8mb3_unicode_ci DEFAULT NULL,
@@ -98,8 +98,7 @@ CREATE TABLE `nas` (
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci;
 
 
-DROP TABLE IF EXISTS `operators`;
-CREATE TABLE `operators` (
+CREATE TABLE IF NOT EXISTS `operators` (
   `id` int(32) NOT NULL AUTO_INCREMENT,
   `username` varchar(32) NOT NULL,
   `password` varchar(32) NOT NULL,
@@ -113,8 +112,7 @@ ON DUPLICATE KEY UPDATE `id` = VALUES(`id`), `username` = VALUES(`username`), `p
 
 SET NAMES utf8mb4;
 
-DROP TABLE IF EXISTS `otp_requests`;
-CREATE TABLE `otp_requests` (
+CREATE TABLE IF NOT EXISTS `otp_requests` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `whatsapp_number` varchar(20) DEFAULT NULL,
   `otp_code` int(11) DEFAULT NULL,
@@ -123,8 +121,7 @@ CREATE TABLE `otp_requests` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 
-DROP TABLE IF EXISTS `print_config`;
-CREATE TABLE `print_config` (
+CREATE TABLE IF NOT EXISTS `print_config` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `hsname1` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `hsname2` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
@@ -141,8 +138,7 @@ INSERT INTO `print_config` (`id`, `hsname1`, `hsname2`, `hsip`, `hsdomain`, `hsc
 (1,	'𝗠𝗨𝗧𝗜𝗔𝗥𝗔',	'𝗡𝗘𝗧',	'10.10.10.1',	'mutiara.wifi',	'0853-7268-7484',	'code',	'ip',	'text')
 ON DUPLICATE KEY UPDATE `id` = VALUES(`id`), `hsname1` = VALUES(`hsname1`), `hsname2` = VALUES(`hsname2`), `hsip` = VALUES(`hsip`), `hsdomain` = VALUES(`hsdomain`), `hscsn` = VALUES(`hscsn`), `hsqrmode` = VALUES(`hsqrmode`), `hsipdomain` = VALUES(`hsipdomain`), `logomode` = VALUES(`logomode`);
 
-DROP TABLE IF EXISTS `radacct`;
-CREATE TABLE `radacct` (
+CREATE TABLE IF NOT EXISTS `radacct` (
   `radacctid` bigint(21) NOT NULL AUTO_INCREMENT,
   `acctsessionid` varchar(64) COLLATE utf8mb3_unicode_ci NOT NULL DEFAULT '',
   `acctuniqueid` varchar(32) COLLATE utf8mb3_unicode_ci NOT NULL DEFAULT '',
@@ -185,8 +181,7 @@ CREATE TABLE `radacct` (
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci;
 
 
-DROP TABLE IF EXISTS `radcheck`;
-CREATE TABLE `radcheck` (
+CREATE TABLE IF NOT EXISTS `radcheck` (
   `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
   `username` varchar(64) COLLATE utf8mb3_unicode_ci NOT NULL DEFAULT '',
   `attribute` varchar(64) COLLATE utf8mb3_unicode_ci NOT NULL DEFAULT '',
@@ -197,8 +192,7 @@ CREATE TABLE `radcheck` (
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci;
 
 
-DROP TABLE IF EXISTS `radgroupbw`;
-CREATE TABLE `radgroupbw` (
+CREATE TABLE IF NOT EXISTS `radgroupbw` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `groupname` varchar(255) NOT NULL,
   `bw_id` int(11) DEFAULT NULL,
@@ -208,8 +202,7 @@ CREATE TABLE `radgroupbw` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
 
 
-DROP TABLE IF EXISTS `radgroupcheck`;
-CREATE TABLE `radgroupcheck` (
+CREATE TABLE IF NOT EXISTS `radgroupcheck` (
   `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
   `groupname` varchar(64) COLLATE utf8mb3_unicode_ci NOT NULL DEFAULT '',
   `attribute` varchar(64) COLLATE utf8mb3_unicode_ci NOT NULL DEFAULT '',
@@ -220,8 +213,7 @@ CREATE TABLE `radgroupcheck` (
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci;
 
 
-DROP TABLE IF EXISTS `radgroupreply`;
-CREATE TABLE `radgroupreply` (
+CREATE TABLE IF NOT EXISTS `radgroupreply` (
   `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
   `groupname` varchar(64) COLLATE utf8mb3_unicode_ci NOT NULL DEFAULT '',
   `attribute` varchar(64) COLLATE utf8mb3_unicode_ci NOT NULL DEFAULT '',
@@ -232,8 +224,7 @@ CREATE TABLE `radgroupreply` (
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci;
 
 
-DROP TABLE IF EXISTS `radpostauth`;
-CREATE TABLE `radpostauth` (
+CREATE TABLE IF NOT EXISTS `radpostauth` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `username` varchar(64) COLLATE utf8mb3_unicode_ci NOT NULL DEFAULT '',
   `pass` varchar(64) COLLATE utf8mb3_unicode_ci NOT NULL DEFAULT '',
@@ -243,8 +234,7 @@ CREATE TABLE `radpostauth` (
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci;
 
 
-DROP TABLE IF EXISTS `radreply`;
-CREATE TABLE `radreply` (
+CREATE TABLE IF NOT EXISTS `radreply` (
   `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
   `username` varchar(64) COLLATE utf8mb3_unicode_ci NOT NULL DEFAULT '',
   `attribute` varchar(64) COLLATE utf8mb3_unicode_ci NOT NULL DEFAULT '',
@@ -255,8 +245,7 @@ CREATE TABLE `radreply` (
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci;
 
 
-DROP TABLE IF EXISTS `radusergroup`;
-CREATE TABLE `radusergroup` (
+CREATE TABLE IF NOT EXISTS `radusergroup` (
   `username` varchar(64) COLLATE utf8mb3_unicode_ci NOT NULL DEFAULT '',
   `groupname` varchar(64) COLLATE utf8mb3_unicode_ci NOT NULL DEFAULT '',
   `priority` int(11) NOT NULL DEFAULT 1,
@@ -264,8 +253,7 @@ CREATE TABLE `radusergroup` (
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci;
 
 
-DROP TABLE IF EXISTS `topup`;
-CREATE TABLE `topup` (
+CREATE TABLE IF NOT EXISTS `topup` (
   `id` varchar(10) NOT NULL,
   `user_id` int(11) NOT NULL,
   `username` varchar(50) NOT NULL,
@@ -274,6 +262,7 @@ CREATE TABLE `topup` (
   `date` datetime DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
 
+DROP TRIGGER IF EXISTS `before_insert_topup`;
 
 DELIMITER ;;
 
@@ -284,8 +273,7 @@ END;;
 
 DELIMITER ;
 
-DROP TABLE IF EXISTS `userbillinfo`;
-CREATE TABLE `userbillinfo` (
+CREATE TABLE IF NOT EXISTS `userbillinfo` (
   `id` int(8) unsigned NOT NULL AUTO_INCREMENT,
   `username` varchar(128) DEFAULT NULL,
   `planName` varchar(128) DEFAULT NULL,
@@ -331,8 +319,7 @@ CREATE TABLE `userbillinfo` (
 ) ENGINE=MyISAM DEFAULT CHARSET=latin1;
 
 
-DROP TABLE IF EXISTS `userinfo`;
-CREATE TABLE `userinfo` (
+CREATE TABLE IF NOT EXISTS `userinfo` (
   `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
   `username` varchar(128) DEFAULT NULL,
   `firstname` varchar(200) DEFAULT NULL,
