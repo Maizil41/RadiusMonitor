@@ -29,7 +29,7 @@ require './auth.php';
         <?php include ("../layout/header.php"); ?>
         <!--begin::Sidebar-->
         <aside class="app-sidebar bg-body-secondary shadow" data-bs-theme="dark"> <!--begin::Sidebar Brand-->
-            <div class="sidebar-brand"><a href="../index.php" class="brand-link"><center>Radius Monitor</a></div>
+            <div class="sidebar-brand"><a href="../index.php" class="brand-link"><img src="../../../dist/assets/img/mutiara.svg" alt="Logo" class="brand-image opacity-75 shadow"><span class="brand-text fw-light">Radius Monitor</span></a></div>
             <div class="sidebar-wrapper">
                 <nav class="mt-2"> <!--begin::Sidebar Menu-->
                     <ul class="nav sidebar-menu flex-column" data-lte-toggle="treeview" role="menu" data-accordion="false">
@@ -59,7 +59,7 @@ require './auth.php';
                         <li class="nav-item"> <a href="#" class="nav-link"> <i class="nav-icon bi ic--baseline-add-card"></i>
                                 <p>
                                     Billing
-                                    <span class="nav-badge badge text-bg-secondary me-3"></span> <i class="nav-arrow bi iconoir--nav-arrow-right"></i>
+                                    <i class="nav-arrow bi iconoir--nav-arrow-right"></i>
                                 </p>
                             </a>
                             <ul class="nav nav-treeview">
@@ -74,7 +74,7 @@ require './auth.php';
                         <li class="nav-item"> <a href="#" class="nav-link active"> <i class="nav-icon bi payment"></i>
                                 <p>
                                     Payment
-                                    <span class="nav-badge badge text-bg-secondary me-3"></span> <i class="nav-arrow bi iconoir--nav-arrow-right"></i>
+                                    <i class="nav-arrow bi iconoir--nav-arrow-right"></i>
                                 </p>
                             </a>
                             <ul class="nav nav-treeview">

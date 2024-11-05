@@ -9,98 +9,8 @@
 *******************************************************************************************************************
 */
 require './auth.php';
-session_start();
-
-require './data/db_config.php';
-
-$host = $db_config['servername'];
-$dbname = $db_config['dbname'];
-$username = $db_config['username'];
-$password = $db_config['password'];
-
-if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    if (isset($_FILES['sqlFile']) && $_FILES['sqlFile']['error'] == UPLOAD_ERR_OK) {
-        $fileTmpName = $_FILES['sqlFile']['tmp_name'];
-        $fileName = $_FILES['sqlFile']['name'];
-
-        try {
-            $pdo = new PDO("mysql:host=$host;dbname=$dbname", $username, $password);
-            $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-
-            $pdo->exec("DROP DATABASE IF EXISTS `$dbname`;");
-            $pdo->exec("CREATE DATABASE `$dbname`;");
-            $pdo->exec("USE `$dbname`;");
-
-            $sql = file_get_contents($fileTmpName);
-            if ($sql === false) {
-                throw new Exception('Gagal membaca file SQL.');
-            }
-            $pdo->exec($sql);
-
-            $_SESSION['message'] = "Database berhasil diperbarui!";
-            $_SESSION['message_type'] = "success";
-        } catch (PDOException $e) {
-            $_SESSION['message'] = "Gagal memperbarui database: " . htmlspecialchars($e->getMessage());
-            $_SESSION['message_type'] = "error";
-        } catch (Exception $e) {
-            $_SESSION['message'] = "Terjadi kesalahan: " . htmlspecialchars($e->getMessage());
-            $_SESSION['message_type'] = "error";
-        }
-    } elseif (isset($_POST['action']) && $_POST['action'] == 'download') {
-        $backupFile = 'backup_' . date('Ymd_His') . '.sql';
-
-        $command = "mysqldump --opt -h" . escapeshellarg($host) . " -u" . escapeshellarg($username) . " -p" . escapeshellarg($password) . " " . escapeshellarg($dbname) . " > " . escapeshellarg($backupFile);
-        exec($command, $output, $return_var);
-
-        if ($return_var === 0 && file_exists($backupFile)) {
-            header('Content-Description: File Transfer');
-            header('Content-Type: application/octet-stream');
-            header('Content-Disposition: attachment; filename="' . basename($backupFile) . '"');
-            header('Content-Length: ' . filesize($backupFile));
-
-            readfile($backupFile);
-
-            unlink($backupFile);
-            exit;
-        } else {
-            $_SESSION['message'] = "Gagal membuat backup database.";
-            $_SESSION['message_type'] = "error";
-        }
-    }
-}
-
-$limit = 20;
-$logFile = '/tmp/log/radius.log';
-
-if (file_exists($logFile)) {
-    $log = file($logFile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
-    if ($log === false) {
-        $log = ['Tidak dapat membaca log.'];
-    } else {
-        $log = array_slice($log, -$limit);
-    }
-} else {
-    $log = ['File log tidak ditemukan.'];
-}
-
-$log = array_reverse($log);
-
-$logString = '';
-foreach ($log as $line) {
-    if (strpos($line, 'Login incorrect') !== false) {
-        if (preg_match('/\[([A-Fa-f0-9]{2}[:-]){5}[A-Fa-f0-9]{2}\//', $line)) {
-            continue;
-        }
-    }
-
-    $encodedLine = htmlspecialchars($line);
-    $encodedLine = str_replace(
-        ['Login OK', 'LogOut OK', 'Login incorrect'],
-        ['<span style="color:green;">Login OK</span>', '<span style="color:orange;">LogOut OK</span>', '<span style="color:red;">Login incorrect</span>'],
-        $encodedLine
-    );
-    $logString .= $encodedLine . "<br>";
-}
+include './data/backup.php';
+include './data/radius_log.php';
 ?>
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
@@ -118,7 +28,7 @@ foreach ($log as $line) {
         <?php include ("layout/header.php"); ?>
         <!--begin::Sidebar-->
         <aside class="app-sidebar bg-body-secondary shadow" data-bs-theme="dark"> <!--begin::Sidebar Brand-->
-            <div class="sidebar-brand"><a href="./index.php" class="brand-link"><center>Radius Monitor</a></div>
+            <div class="sidebar-brand"><a href="./index.php" class="brand-link"><img src="../../dist/assets/img/mutiara.svg" alt="Logo" class="brand-image opacity-75 shadow"><span class="brand-text fw-light">Radius Monitor</span></a></div>
             <div class="sidebar-wrapper">
                 <nav class="mt-2"> <!--begin::Sidebar Menu-->
                     <ul class="nav sidebar-menu flex-column" data-lte-toggle="treeview" role="menu" data-accordion="false">
@@ -148,7 +58,7 @@ foreach ($log as $line) {
                         <li class="nav-item"> <a href="#" class="nav-link"> <i class="nav-icon bi ic--baseline-add-card"></i>
                                 <p>
                                     Billing
-                                    <span class="nav-badge badge text-bg-secondary me-3"></span> <i class="nav-arrow bi iconoir--nav-arrow-right"></i>
+                                    <i class="nav-arrow bi iconoir--nav-arrow-right"></i>
                                 </p>
                             </a>
                             <ul class="nav nav-treeview">
@@ -163,7 +73,7 @@ foreach ($log as $line) {
                         <li class="nav-item"> <a href="#" class="nav-link"> <i class="nav-icon bi payment"></i>
                                 <p>
                                     Payment
-                                    <span class="nav-badge badge text-bg-secondary me-3"></span> <i class="nav-arrow bi iconoir--nav-arrow-right"></i>
+                                    <i class="nav-arrow bi iconoir--nav-arrow-right"></i>
                                 </p>
                             </a>
                             <ul class="nav nav-treeview">
