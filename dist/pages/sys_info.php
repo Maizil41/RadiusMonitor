@@ -142,29 +142,36 @@ function execute_command($command) {
     return trim($output);
 }
 
-function extractUptime($uptimeString) {
-    error_log("Uptime raw output: $uptimeString");
+function uptime_str($uptime) {
+    if ($uptime > 0) {
+        $days = floor($uptime / 86400);
+        $hours = floor(($uptime % 86400) / 3600);
+        $minutes = floor(($uptime % 3600) / 60);
+        $seconds = $uptime % 60;
 
-    $parts = explode('load average:', $uptimeString);
-    if (count($parts) > 1) {
-        $uptimePart = trim($parts[0]);
-        
-        if (preg_match('/^\d{2}:\d{2}:\d{2} up (.+)$/', $uptimePart, $matches)) {
-            $uptime = $matches[1];
-            $uptime = str_replace(',', '', $uptime);
-            return $uptime;
-        }
+        $days_str = $days > 0 ? "{$days}d " : "";
+        $hours_str = $hours > 0 ? "{$hours}h " : "";
+        $minutes_str = $minutes > 0 ? "{$minutes}m " : "";
+        $seconds_str = $seconds > 0 ? "{$seconds}s" : "";
+
+        return trim("{$days_str}{$hours_str}{$minutes_str}{$seconds_str}");
     }
-    return 'Uptime format tidak dikenali';
+    return "0 detik";
 }
 
-function getUptime() {
-    $uptime = shell_exec('uptime');
-    $uptime = trim($uptime);
-    return extractUptime($uptime);
+function print_times() {
+    $uptime_data = file_get_contents('/proc/uptime');
+    $uptime_seconds = (int)explode(" ", $uptime_data)[0];
+    
+    $uptime = uptime_str($uptime_seconds);
+    $now = date('Y-m-d H:i:s');
+
+    global $uptime_value, $datetime_value;
+    $uptime_value = $uptime;
+    $datetime_value = $now;
 }
 
-$uptime = getUptime();
+print_times();
 
 function check_service_status($service_name) {
     $status = execute_command("pgrep $service_name");
@@ -226,7 +233,7 @@ $coova_chilli_status = check_service_status('chilli');
                                     <tr>
                                         <th><center><span class='info-label'>Hostname:</span> <span class='status-running'><?php echo $hostname; ?></span></th>
                                     <tr>
-                                        <th><center><span class='info-label'>Uptime:</span> <span class='status-running'><?php echo htmlspecialchars($uptime); ?></span></th>
+                                        <th><center><span class='info-label'>Uptime:</span> <span class='status-running'><?php echo $uptime_value; ?></span></th>
                                     <tr>
                                         <th><center><span class='info-label'>Firmware Version:</span> <span class='status-running'><?php echo $firmware_version; ?></span></th>
                                     <tr>
@@ -234,7 +241,7 @@ $coova_chilli_status = check_service_status('chilli');
                                     <tr>
                                         <th><center><span class='info-label'>Model:</span> <span class='status-running'><?php echo $model; ?></span></th>
                                     <tr>
-                                        <th><center><span class='info-label'>Local Time:</span> <span class='status-running'><?php echo $local_time; ?></span></th>
+                                        <th><center><span class='info-label'>Local Time:</span> <span class='status-running'><?php echo $datetime_value; ?></span></th>
                                     </tr>
                                 </thead>
                             </table>
