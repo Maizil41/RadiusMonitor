@@ -44,7 +44,7 @@ Features
 - Database Restore & Backup
 - QRCode Tickets support
 - WhatsApp Bot Integration
-- PPPOE Management `(On RadMon V2 Project)`
+- PPPOE Management (On [RadMon V2](https://github.com/maizil41/RadMonv2) Project)
 
 Credit
 ---
