@@ -53,6 +53,10 @@ Credit
 </ul>
 
 <ul>
+  <li>Template : <a href="https://adminlte.io/" target="_blank">AdminLTE</a></li>
+</ul>
+
+<ul>
   <li>Auto Installer : <a href="https://github.com/rtaserver" target="_blank">RTA-SERVER</a></li>
 </ul>
 
