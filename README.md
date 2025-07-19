@@ -49,7 +49,7 @@ Features
 Credit
 ---
 <ul>
-  <li>Owner : <a href="https://github.com/maizil41" target="_blank">MAIZIL</a></li>
+  <li>Author : <a href="https://github.com/maizil41" target="_blank">MAIZIL</a></li>
 </ul>
 
 <ul>
